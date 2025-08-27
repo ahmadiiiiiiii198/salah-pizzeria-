@@ -349,27 +349,7 @@ class BusinessHoursService {
     }
   }
 
-  /**
-   * Clear cache (useful for testing or when hours are updated)
-   */
-  clearCache(): void {
-    this.cachedHours = null;
-    this.lastFetch = 0;
 
-    // Also clear any localStorage cache that might exist
-    try {
-      localStorage.removeItem('businessHours');
-      localStorage.removeItem('opening_hours');
-      localStorage.removeItem('business_hours_cache');
-    } catch (e) {
-      console.warn('Could not clear localStorage cache:', e);
-    }
-
-    // Reduced logging - only log cache clear in debug mode
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🗑️ Business hours cache cleared');
-    }
-  }
 
   /**
    * Force refresh business hours from database (bypasses all caching)

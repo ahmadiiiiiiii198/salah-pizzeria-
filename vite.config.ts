@@ -16,6 +16,7 @@ export default defineConfig(({ mode }) => ({
     sourcemap: false,
     copyPublicDir: true,
     minify: 'esbuild',
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html')
@@ -27,9 +28,13 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-tabs'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-tabs', '@radix-ui/react-select', '@radix-ui/react-dropdown-menu'],
           supabase: ['@supabase/supabase-js'],
-          stripe: ['@stripe/stripe-js']
+          stripe: ['@stripe/stripe-js', '@stripe/react-stripe-js'],
+          query: ['@tanstack/react-query'],
+          motion: ['framer-motion'],
+          forms: ['react-hook-form', '@hookform/resolvers'],
+          utils: ['clsx', 'class-variance-authority', 'date-fns']
         }
       }
     }
