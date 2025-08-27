@@ -18,7 +18,7 @@ import BackgroundInitializer from "./components/BackgroundInitializer";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
 import AdminMinimal from "./pages/AdminMinimal";
-import Ordini from "./pages/Ordini";
+import Ordini from "./pages/ordini";
 
 import OrderDashboardPro from "./pages/OrderDashboardPro";
 import OrderTracking from "./pages/OrderTracking";
