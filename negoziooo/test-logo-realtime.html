@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logo Real-time Test</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .logo-preview { border: 2px solid #ddd; padding: 20px; margin: 10px 0; border-radius: 8px; text-align: center; }
+        .logo-img { max-width: 100px; max-height: 100px; border-radius: 50%; }
+        .log { background: #f8f9fa; border: 1px solid #dee2e6; padding: 10px; margin: 10px 0; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; font-weight: bold; }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍕 Logo Real-time Functionality Test</h1>
+        <p>This test checks if logo changes in the admin panel are reflected in real-time on the frontend.</p>
+
+        <div class="grid">
+            <div>
+                <h3>Main Logo (logoSettings)</h3>
+                <div class="logo-preview" id="mainLogoPreview">
+                    <div id="mainLogoContent">Loading...</div>
+                </div>
+            </div>
+            <div>
+                <h3>Navbar Logo (navbarLogoSettings)</h3>
+                <div class="logo-preview" id="navbarLogoPreview">
+                    <div id="navbarLogoContent">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status" id="connectionStatus">🔄 Connecting to database...</div>
+
+        <div>
+            <button onclick="testMainLogo()">Test Main Logo Update</button>
+            <button onclick="testNavbarLogo()">Test Navbar Logo Update</button>
+            <button onclick="refreshLogos()">Manual Refresh</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+
+        <h3>Real-time Activity Log</h3>
+        <div class="log" id="activityLog"></div>
+    </div>
+
+    <script>
+        // Supabase configuration
+        const supabaseUrl = 'https://htdgoceqepvrffblfvns.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZGdvY2VxZXB2cmZmYmxmdm5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY5NTI4NzEsImV4cCI6MjA1MjUyODg3MX0.YJhJJhWJQOKJhJhWJQOKJhJhWJQOKJhJhWJQOKJhJhWJQOK';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        let mainLogoData = null;
+        let navbarLogoData = null;
+        let updateCount = 0;
+
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.getElementById('activityLog');
+            logElement.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function updateStatus(message, type = 'info') {
+            const statusElement = document.getElementById('connectionStatus');
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+        }
+
+        function updateMainLogoDisplay() {
+            const content = document.getElementById('mainLogoContent');
+            if (mainLogoData) {
+                content.innerHTML = `
+                    <img src="${mainLogoData.logoUrl}" alt="${mainLogoData.altText}" class="logo-img"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div style="display:none;">❌ Failed to load</div>
+                    <p><strong>URL:</strong> ${mainLogoData.logoUrl}</p>
+                    <p><strong>Alt:</strong> ${mainLogoData.altText}</p>
+                `;
+            } else {
+                content.innerHTML = '<div>No data loaded</div>';
+            }
+        }
+
+        function updateNavbarLogoDisplay() {
+            const content = document.getElementById('navbarLogoContent');
+            if (navbarLogoData) {
+                content.innerHTML = `
+                    <img src="${navbarLogoData.logoUrl}" alt="${navbarLogoData.altText}" class="logo-img"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div style="display:none;">❌ Failed to load</div>
+                    <p><strong>URL:</strong> ${navbarLogoData.logoUrl}</p>
+                    <p><strong>Alt:</strong> ${navbarLogoData.altText}</p>
+                    <p><strong>Size:</strong> ${navbarLogoData.logoSize}</p>
+                    <p><strong>Show:</strong> ${navbarLogoData.showLogo ? '✅' : '❌'}</p>
+                `;
+            } else {
+                content.innerHTML = '<div>No data loaded</div>';
+            }
+        }
+
+        async function loadLogos() {
+            try {
+                log('🔍 Loading logo settings from database...');
+
+                // Load main logo
+                const { data: mainLogo, error: mainError } = await supabase
+                    .from('settings')
+                    .select('value')
+                    .eq('key', 'logoSettings')
+                    .single();
+
+                if (mainError) throw new Error(`Main logo error: ${mainError.message}`);
+                mainLogoData = mainLogo.value;
+                log('✅ Main logo loaded successfully');
+
+                // Load navbar logo
+                const { data: navbarLogo, error: navbarError } = await supabase
+                    .from('settings')
+                    .select('value')
+                    .eq('key', 'navbarLogoSettings')
+                    .single();
+
+                if (navbarError) throw new Error(`Navbar logo error: ${navbarError.message}`);
+                navbarLogoData = navbarLogo.value;
+                log('✅ Navbar logo loaded successfully');
+
+                updateMainLogoDisplay();
+                updateNavbarLogoDisplay();
+                updateStatus('✅ Connected and logos loaded', 'success');
+
+            } catch (error) {
+                log(`❌ Error loading logos: ${error.message}`);
+                updateStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function setupRealTimeSubscriptions() {
+            log('📡 Setting up real-time subscriptions...');
+
+            // Main logo subscription
+            const mainLogoChannel = supabase
+                .channel('main-logo-test')
+                .on('postgres_changes', {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'settings',
+                    filter: 'key=eq.logoSettings'
+                }, (payload) => {
+                    updateCount++;
+                    log(`🔔 MAIN LOGO UPDATE #${updateCount} RECEIVED!`);
+                    log(`📦 New main logo data: ${JSON.stringify(payload.new.value)}`);
+                    mainLogoData = payload.new.value;
+                    updateMainLogoDisplay();
+                })
+                .subscribe();
+
+            // Navbar logo subscription
+            const navbarLogoChannel = supabase
+                .channel('navbar-logo-test')
+                .on('postgres_changes', {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'settings',
+                    filter: 'key=eq.navbarLogoSettings'
+                }, (payload) => {
+                    updateCount++;
+                    log(`🔔 NAVBAR LOGO UPDATE #${updateCount} RECEIVED!`);
+                    log(`📦 New navbar logo data: ${JSON.stringify(payload.new.value)}`);
+                    navbarLogoData = payload.new.value;
+                    updateNavbarLogoDisplay();
+                })
+                .subscribe();
+
+            log('✅ Real-time subscriptions active');
+            log('🎯 Ready to receive logo updates from admin panel');
+        }
+
+        async function testMainLogo() {
+            log('🧪 Testing main logo update...');
+            const testUrl = `https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f35${Math.floor(Math.random() * 10)}.png`;
+
+            try {
+                const { error } = await supabase
+                    .from('settings')
+                    .update({
+                        value: {
+                            logoUrl: testUrl,
+                            altText: `Test Main Logo - ${new Date().toLocaleTimeString()}`
+                        }
+                    })
+                    .eq('key', 'logoSettings');
+
+                if (error) throw error;
+                log(`✅ Main logo test update sent: ${testUrl}`);
+            } catch (error) {
+                log(`❌ Main logo test failed: ${error.message}`);
+            }
+        }
+
+        async function testNavbarLogo() {
+            log('🧪 Testing navbar logo update...');
+            const testUrl = `https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f35${Math.floor(Math.random() * 10)}.png`;
+            const sizes = ['small', 'medium', 'large'];
+            const randomSize = sizes[Math.floor(Math.random() * sizes.length)];
+
+            try {
+                const { error } = await supabase
+                    .from('settings')
+                    .update({
+                        value: {
+                            logoUrl: testUrl,
+                            altText: `Test Navbar Logo - ${new Date().toLocaleTimeString()}`,
+                            showLogo: true,
+                            logoSize: randomSize
+                        }
+                    })
+                    .eq('key', 'navbarLogoSettings');
+
+                if (error) throw error;
+                log(`✅ Navbar logo test update sent: ${testUrl} (size: ${randomSize})`);
+            } catch (error) {
+                log(`❌ Navbar logo test failed: ${error.message}`);
+            }
+        }
+
+        function refreshLogos() {
+            log('🔄 Manual refresh triggered...');
+            loadLogos();
+        }
+
+        function clearLog() {
+            document.getElementById('activityLog').innerHTML = '';
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', async () => {
+            log('🚀 Logo real-time test initialized');
+            await loadLogos();
+            setupRealTimeSubscriptions();
+        });
+    </script>
+</body>
+</html>

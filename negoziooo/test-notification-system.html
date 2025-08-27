@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .info { color: #17a2b8; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .test-section {
+            border-left: 4px solid #007bff;
+            padding-left: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔔 Notification System Test</h1>
+    
+    <div class="container">
+        <h2>Database Structure Test</h2>
+        <div id="dbLog" class="log"></div>
+        <button onclick="testDatabaseStructure()">Test Database Structure</button>
+    </div>
+
+    <div class="container">
+        <h2>Notification Operations Test</h2>
+        <div id="notificationLog" class="log"></div>
+        <button onclick="testNotificationOperations()">Test Notification Operations</button>
+        <button onclick="createTestNotification()">Create Test Notification</button>
+        <button onclick="checkUnreadNotifications()">Check Unread Notifications</button>
+    </div>
+
+    <div class="container">
+        <h2>Sound System Test</h2>
+        <div id="soundLog" class="log"></div>
+        <button onclick="testSoundSystem()">Test Sound System</button>
+        <button onclick="checkNotificationSounds()">Check Notification Sounds</button>
+    </div>
+
+    <div class="container">
+        <h2>Complete Flow Test</h2>
+        <div id="flowLog" class="log"></div>
+        <button onclick="testCompleteFlow()">Test Complete Order → Notification → Sound Flow</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Initialize Supabase client
+        const SUPABASE_URL = 'https://htdgoceqepvrffblfvns.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZGdvY2VxZXB2cmZmYmxmdm5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY5NTI5NzQsImV4cCI6MjA1MjUyODk3NH0.Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function log(message, type = 'info', containerId = 'dbLog') {
+            const container = document.getElementById(containerId);
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}\n`;
+            container.innerHTML += `<span class="${type}">${logEntry}</span>`;
+            container.scrollTop = container.scrollHeight;
+            console.log(message);
+        }
+
+        async function testDatabaseStructure() {
+            log('🔍 Testing database structure...', 'info', 'dbLog');
+            
+            try {
+                // Test order_notifications table structure
+                const { data: notificationColumns, error: notificationError } = await supabase
+                    .from('order_notifications')
+                    .select('*')
+                    .limit(1);
+
+                if (notificationError) {
+                    log(`❌ order_notifications table error: ${notificationError.message}`, 'error', 'dbLog');
+                } else {
+                    log('✅ order_notifications table accessible', 'success', 'dbLog');
+                }
+
+                // Test notification_sounds table structure
+                const { data: soundsData, error: soundsError } = await supabase
+                    .from('notification_sounds')
+                    .select('*')
+                    .limit(1);
+
+                if (soundsError) {
+                    log(`❌ notification_sounds table error: ${soundsError.message}`, 'error', 'dbLog');
+                } else {
+                    log('✅ notification_sounds table accessible', 'success', 'dbLog');
+                }
+
+            } catch (error) {
+                log(`❌ Database structure test failed: ${error.message}`, 'error', 'dbLog');
+            }
+        }
+
+        async function testNotificationOperations() {
+            log('📝 Testing notification operations...', 'info', 'notificationLog');
+            
+            try {
+                // Test reading notifications
+                const { data: notifications, error: readError } = await supabase
+                    .from('order_notifications')
+                    .select('*')
+                    .eq('is_read', false)
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+
+                if (readError) {
+                    log(`❌ Read notifications error: ${readError.message}`, 'error', 'notificationLog');
+                } else {
+                    log(`✅ Read notifications successful: ${notifications.length} unread notifications`, 'success', 'notificationLog');
+                    notifications.forEach(n => {
+                        log(`  📋 ${n.title || 'No title'}: ${n.message}`, 'info', 'notificationLog');
+                    });
+                }
+
+            } catch (error) {
+                log(`❌ Notification operations test failed: ${error.message}`, 'error', 'notificationLog');
+            }
+        }
+
+        async function createTestNotification() {
+            log('➕ Creating test notification...', 'info', 'notificationLog');
+            
+            try {
+                const testNotification = {
+                    order_id: '00000000-0000-0000-0000-000000000000', // Dummy order ID
+                    notification_type: 'new_order',
+                    title: 'Test Notification',
+                    message: `Test notification created at ${new Date().toLocaleString()}`,
+                    is_read: false,
+                    is_acknowledged: false
+                };
+
+                const { data, error } = await supabase
+                    .from('order_notifications')
+                    .insert(testNotification)
+                    .select()
+                    .single();
+
+                if (error) {
+                    log(`❌ Create notification error: ${error.message}`, 'error', 'notificationLog');
+                } else {
+                    log(`✅ Test notification created successfully: ${data.id}`, 'success', 'notificationLog');
+                }
+
+            } catch (error) {
+                log(`❌ Create test notification failed: ${error.message}`, 'error', 'notificationLog');
+            }
+        }
+
+        async function checkUnreadNotifications() {
+            log('🔍 Checking unread notifications...', 'info', 'notificationLog');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('order_notifications')
+                    .select('id, title, message, created_at')
+                    .eq('is_read', false)
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    log(`❌ Check unread error: ${error.message}`, 'error', 'notificationLog');
+                } else {
+                    log(`📊 Found ${data.length} unread notifications`, 'info', 'notificationLog');
+                    if (data.length > 0) {
+                        log('🔔 These should trigger notification sounds!', 'warning', 'notificationLog');
+                    }
+                }
+
+            } catch (error) {
+                log(`❌ Check unread notifications failed: ${error.message}`, 'error', 'notificationLog');
+            }
+        }
+
+        async function testSoundSystem() {
+            log('🔊 Testing sound system...', 'info', 'soundLog');
+            
+            try {
+                // Check if notification sounds are configured
+                const { data: sounds, error: soundsError } = await supabase
+                    .from('notification_sounds')
+                    .select('*')
+                    .eq('is_active', true);
+
+                if (soundsError) {
+                    log(`❌ Sound system error: ${soundsError.message}`, 'error', 'soundLog');
+                } else if (sounds.length === 0) {
+                    log('⚠️ No active notification sounds found', 'warning', 'soundLog');
+                } else {
+                    log(`✅ Found ${sounds.length} active notification sound(s)`, 'success', 'soundLog');
+                    sounds.forEach(sound => {
+                        log(`  🎵 ${sound.name} (${sound.sound_type})`, 'info', 'soundLog');
+                    });
+                }
+
+                // Test basic audio capability
+                log('🎵 Testing basic audio capability...', 'info', 'soundLog');
+                const audio = new Audio();
+                const beepDataUrl = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT';
+                audio.src = beepDataUrl;
+                audio.volume = 0.3;
+                
+                try {
+                    await audio.play();
+                    log('✅ Audio playback test successful', 'success', 'soundLog');
+                } catch (audioError) {
+                    log(`⚠️ Audio playback blocked (user interaction required): ${audioError.message}`, 'warning', 'soundLog');
+                }
+
+            } catch (error) {
+                log(`❌ Sound system test failed: ${error.message}`, 'error', 'soundLog');
+            }
+        }
+
+        async function checkNotificationSounds() {
+            log('🎵 Checking notification sounds configuration...', 'info', 'soundLog');
+            
+            try {
+                const { data: allSounds, error } = await supabase
+                    .from('notification_sounds')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    log(`❌ Check sounds error: ${error.message}`, 'error', 'soundLog');
+                } else {
+                    log(`📊 Total notification sounds: ${allSounds.length}`, 'info', 'soundLog');
+                    allSounds.forEach(sound => {
+                        const status = sound.is_active ? '🟢 ACTIVE' : '⚪ inactive';
+                        log(`  ${status} ${sound.name} (${sound.sound_type})`, 'info', 'soundLog');
+                    });
+                }
+
+            } catch (error) {
+                log(`❌ Check notification sounds failed: ${error.message}`, 'error', 'soundLog');
+            }
+        }
+
+        async function testCompleteFlow() {
+            log('🔄 Testing complete order → notification → sound flow...', 'info', 'flowLog');
+            
+            try {
+                // Step 1: Create a test order
+                log('1️⃣ Creating test order...', 'info', 'flowLog');
+                const orderNumber = `ORD-FLOW-TEST-${Date.now()}`;
+                const { data: order, error: orderError } = await supabase
+                    .from('orders')
+                    .insert({
+                        order_number: orderNumber,
+                        customer_name: 'Flow Test Customer',
+                        customer_email: 'flowtest@example.com',
+                        customer_phone: '+39 123 456 789',
+                        customer_address: 'Flow Test Address',
+                        total_amount: 30.00,
+                        status: 'confirmed'
+                    })
+                    .select()
+                    .single();
+
+                if (orderError) {
+                    log(`❌ Order creation failed: ${orderError.message}`, 'error', 'flowLog');
+                    return;
+                }
+                log(`✅ Order created: ${order.order_number}`, 'success', 'flowLog');
+
+                // Step 2: Create notification for the order
+                log('2️⃣ Creating notification for order...', 'info', 'flowLog');
+                const { data: notification, error: notificationError } = await supabase
+                    .from('order_notifications')
+                    .insert({
+                        order_id: order.id,
+                        notification_type: 'new_order',
+                        title: 'Flow Test Order!',
+                        message: `Flow test order received from ${order.customer_name} - €${order.total_amount}`,
+                        is_read: false,
+                        is_acknowledged: false
+                    })
+                    .select()
+                    .single();
+
+                if (notificationError) {
+                    log(`❌ Notification creation failed: ${notificationError.message}`, 'error', 'flowLog');
+                    return;
+                }
+                log(`✅ Notification created: ${notification.id}`, 'success', 'flowLog');
+
+                // Step 3: Verify notification appears in unread list
+                log('3️⃣ Verifying notification appears in unread list...', 'info', 'flowLog');
+                const { data: unreadNotifications, error: unreadError } = await supabase
+                    .from('order_notifications')
+                    .select('*')
+                    .eq('is_read', false)
+                    .eq('id', notification.id);
+
+                if (unreadError) {
+                    log(`❌ Unread verification failed: ${unreadError.message}`, 'error', 'flowLog');
+                } else if (unreadNotifications.length === 0) {
+                    log(`❌ Notification not found in unread list`, 'error', 'flowLog');
+                } else {
+                    log(`✅ Notification verified in unread list`, 'success', 'flowLog');
+                }
+
+                // Step 4: Check if sound system would trigger
+                log('4️⃣ Checking if sound system would trigger...', 'info', 'flowLog');
+                const { data: activeSounds } = await supabase
+                    .from('notification_sounds')
+                    .select('*')
+                    .eq('is_active', true);
+
+                if (activeSounds && activeSounds.length > 0) {
+                    log(`✅ Sound system ready: ${activeSounds[0].name}`, 'success', 'flowLog');
+                    log(`🔔 Complete flow successful! Notification should trigger sound in admin panel.`, 'success', 'flowLog');
+                } else {
+                    log(`⚠️ No active sounds configured`, 'warning', 'flowLog');
+                }
+
+            } catch (error) {
+                log(`❌ Complete flow test failed: ${error.message}`, 'error', 'flowLog');
+            }
+        }
+
+        // Auto-run basic tests on page load
+        window.onload = function() {
+            setTimeout(() => {
+                testDatabaseStructure();
+                checkUnreadNotifications();
+                checkNotificationSounds();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

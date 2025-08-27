@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Authentication Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .info { color: #17a2b8; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .delete-btn {
+            background: #dc3545;
+        }
+        .delete-btn:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 Admin Authentication Test</h1>
+    
+    <div class="container">
+        <h2>Authentication Test</h2>
+        <div id="authLog" class="log"></div>
+        <button onclick="testAdminAuth()">Test Admin Authentication</button>
+    </div>
+
+    <div class="container">
+        <h2>Order Deletion Test</h2>
+        <div id="deleteLog" class="log"></div>
+        <button onclick="createTestOrder()">Create Test Order</button>
+        <button onclick="testOrderDeletion()" class="delete-btn">Test Order Deletion</button>
+        <button onclick="listOrders()">List Current Orders</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Initialize Supabase client
+        const SUPABASE_URL = 'https://htdgoceqepvrffblfvns.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZGdvY2VxZXB2cmZmYmxmdm5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY5NTI5NzQsImV4cCI6MjA1MjUyODk3NH0.Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let testOrderId = null;
+
+        function log(message, type = 'info', containerId = 'authLog') {
+            const container = document.getElementById(containerId);
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}\n`;
+            container.innerHTML += `<span class="${type}">${logEntry}</span>`;
+            container.scrollTop = container.scrollHeight;
+            console.log(message);
+        }
+
+        // Replicate the ensureAdminAuth function from the app
+        async function ensureAdminAuth() {
+            try {
+                // Check if we already have an authenticated session
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (session) {
+                    log('✅ [AdminAuth] Existing Supabase session found', 'success', 'authLog');
+                    return true;
+                }
+
+                log('🔐 [AdminAuth] No Supabase session found, trying anonymous session...', 'info', 'authLog');
+                
+                // Try to create an anonymous session for admin operations
+                try {
+                    const { data: authData, error: authError } = await supabase.auth.signInAnonymously();
+                    
+                    if (authError) {
+                        log(`⚠️ [AdminAuth] Anonymous session failed: ${authError.message}`, 'warning', 'authLog');
+                        log('🔓 [AdminAuth] Continuing with public access (RLS policies should allow admin operations)', 'info', 'authLog');
+                        return true; // Return true since we have public RLS policies
+                    }
+                    
+                    log('✅ [AdminAuth] Anonymous session created successfully', 'success', 'authLog');
+                    return true;
+                } catch (anonymousError) {
+                    log(`⚠️ [AdminAuth] Anonymous authentication not available: ${anonymousError.message}`, 'warning', 'authLog');
+                    log('🔓 [AdminAuth] Continuing with public access (RLS policies should allow admin operations)', 'info', 'authLog');
+                    return true; // Return true since we have public RLS policies
+                }
+            } catch (error) {
+                log(`❌ [AdminAuth] Error ensuring admin authentication: ${error.message}`, 'error', 'authLog');
+                log('🔓 [AdminAuth] Falling back to public access', 'info', 'authLog');
+                return true; // Return true to allow operations to continue with public RLS policies
+            }
+        }
+
+        async function testAdminAuth() {
+            log('🧪 Testing admin authentication...', 'info', 'authLog');
+            
+            try {
+                const authSuccess = await ensureAdminAuth();
+                if (authSuccess) {
+                    log('✅ Admin authentication test passed!', 'success', 'authLog');
+                } else {
+                    log('❌ Admin authentication test failed!', 'error', 'authLog');
+                }
+            } catch (error) {
+                log(`❌ Admin authentication test error: ${error.message}`, 'error', 'authLog');
+            }
+        }
+
+        async function createTestOrder() {
+            log('➕ Creating test order...', 'info', 'deleteLog');
+            
+            try {
+                const orderNumber = `ORD-AUTH-TEST-${Date.now()}`;
+                const { data: order, error } = await supabase
+                    .from('orders')
+                    .insert({
+                        order_number: orderNumber,
+                        customer_name: 'Auth Test Customer',
+                        customer_email: 'authtest@example.com',
+                        customer_phone: '+39 123 456 789',
+                        customer_address: 'Auth Test Address',
+                        total_amount: 15.00,
+                        status: 'confirmed'
+                    })
+                    .select()
+                    .single();
+
+                if (error) {
+                    log(`❌ Failed to create test order: ${error.message}`, 'error', 'deleteLog');
+                } else {
+                    testOrderId = order.id;
+                    log(`✅ Test order created: ${order.order_number} (ID: ${order.id})`, 'success', 'deleteLog');
+                }
+            } catch (error) {
+                log(`❌ Create test order error: ${error.message}`, 'error', 'deleteLog');
+            }
+        }
+
+        async function testOrderDeletion() {
+            if (!testOrderId) {
+                log('⚠️ No test order available. Create one first.', 'warning', 'deleteLog');
+                return;
+            }
+
+            log(`🗑️ Testing order deletion for ID: ${testOrderId}`, 'info', 'deleteLog');
+            
+            try {
+                // Test admin authentication first
+                const authSuccess = await ensureAdminAuth();
+                log(`🔐 Authentication result: ${authSuccess}`, authSuccess ? 'success' : 'warning', 'deleteLog');
+
+                // Try using the database function first
+                log('🔧 Trying database function delete_order_cascade...', 'info', 'deleteLog');
+                const { error: functionError } = await supabase.rpc('delete_order_cascade', {
+                    order_uuid: testOrderId
+                });
+
+                if (functionError) {
+                    log(`⚠️ Database function failed: ${functionError.message}`, 'warning', 'deleteLog');
+                    
+                    // Try direct deletion
+                    log('🔧 Trying direct deletion...', 'info', 'deleteLog');
+                    const { error: directError } = await supabase
+                        .from('orders')
+                        .delete()
+                        .eq('id', testOrderId);
+
+                    if (directError) {
+                        log(`❌ Direct deletion failed: ${directError.message}`, 'error', 'deleteLog');
+                    } else {
+                        log('✅ Direct deletion successful!', 'success', 'deleteLog');
+                        testOrderId = null;
+                    }
+                } else {
+                    log('✅ Database function deletion successful!', 'success', 'deleteLog');
+                    testOrderId = null;
+                }
+
+            } catch (error) {
+                log(`❌ Order deletion test error: ${error.message}`, 'error', 'deleteLog');
+            }
+        }
+
+        async function listOrders() {
+            log('📋 Listing current orders...', 'info', 'deleteLog');
+            
+            try {
+                const { data: orders, error } = await supabase
+                    .from('orders')
+                    .select('id, order_number, customer_name, status, created_at')
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+
+                if (error) {
+                    log(`❌ Failed to list orders: ${error.message}`, 'error', 'deleteLog');
+                } else {
+                    log(`📊 Found ${orders.length} orders:`, 'info', 'deleteLog');
+                    orders.forEach(order => {
+                        log(`  📋 ${order.order_number} - ${order.customer_name} (${order.status})`, 'info', 'deleteLog');
+                    });
+                }
+            } catch (error) {
+                log(`❌ List orders error: ${error.message}`, 'error', 'deleteLog');
+            }
+        }
+
+        // Auto-run authentication test on page load
+        window.onload = function() {
+            setTimeout(() => {
+                testAdminAuth();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

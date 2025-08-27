@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Notification System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-button.success {
+            background: #28a745;
+        }
+        .test-button.error {
+            background: #dc3545;
+        }
+        .log-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Unified Notification System Test</h1>
+    <p>This page tests the complete notification system from order creation to sound playback.</p>
+
+    <div class="test-section">
+        <h2>📊 System Status</h2>
+        <div id="system-status">Checking system status...</div>
+        <button class="test-button" onclick="checkSystemStatus()">🔄 Refresh Status</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🔊 Audio System Test</h2>
+        <button class="test-button" onclick="testAudioSystem()">🧪 Test Audio</button>
+        <button class="test-button" onclick="testUserInteraction()">👆 Test User Interaction</button>
+        <div id="audio-status">Audio system not tested</div>
+    </div>
+
+    <div class="test-section">
+        <h2>📡 Database Connection Test</h2>
+        <button class="test-button" onclick="testDatabaseConnection()">🔗 Test Database</button>
+        <button class="test-button" onclick="testNotificationQuery()">📋 Test Notification Query</button>
+        <div id="database-status">Database not tested</div>
+    </div>
+
+    <div class="test-section">
+        <h2>🛒 Order Creation Test</h2>
+        <button class="test-button" onclick="createTestOrder()">➕ Create Test Order</button>
+        <button class="test-button" onclick="createTestNotification()">🔔 Create Test Notification</button>
+        <div id="order-status">No test orders created</div>
+    </div>
+
+    <div class="test-section">
+        <h2>📡 Real-time Subscription Test</h2>
+        <button class="test-button" onclick="testRealtimeSubscription()">📡 Test Real-time</button>
+        <button class="test-button" onclick="triggerRealtimeEvent()">⚡ Trigger Event</button>
+        <div id="realtime-status">Real-time not tested</div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔄 End-to-End Test</h2>
+        <button class="test-button" onclick="runCompleteTest()">🚀 Run Complete Test</button>
+        <div id="complete-test-status">Complete test not run</div>
+    </div>
+
+    <div class="test-section">
+        <h2>📝 Test Log</h2>
+        <button class="test-button" onclick="clearLog()">🗑️ Clear Log</button>
+        <div id="log-output" class="log-output">Test log will appear here...</div>
+    </div>
+
+    <script type="module">
+        // Import Supabase
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js@2';
+
+        const SUPABASE_URL = "https://htdgoceqepvrffblfvns.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZGdvY2VxZXB2cmZmYmxmdm5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMwNTUwNzksImV4cCI6MjA2ODYzMTA3OX0.TJqTe3f0-GjFLoFrT64LKbUJWtXU9ht08tX9O8Yp7y8";
+
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        window.supabase = supabase;
+
+        // Logging function
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logOutput = document.getElementById('log-output');
+            logOutput.innerHTML += `[${timestamp}] ${message}\n`;
+            logOutput.scrollTop = logOutput.scrollHeight;
+            console.log(message);
+        }
+
+        function setStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        // Test functions
+        window.checkSystemStatus = async function() {
+            log('🔍 Checking system status...');
+            
+            try {
+                // Check if we're on the right domain
+                const currentURL = window.location.href;
+                log(`📍 Current URL: ${currentURL}`);
+                
+                // Check if UnifiedNotificationSystem is available
+                const hasUnifiedSystem = !!document.querySelector('[data-testid="unified-notification-system"]');
+                log(`🔧 UnifiedNotificationSystem detected: ${hasUnifiedSystem}`);
+                
+                // Check Supabase connection
+                const { data, error } = await supabase.from('orders').select('count').limit(1);
+                if (error) {
+                    log(`❌ Supabase connection error: ${error.message}`);
+                    setStatus('system-status', 'Supabase connection failed', 'error');
+                } else {
+                    log('✅ Supabase connection successful');
+                    setStatus('system-status', 'System status: All systems operational', 'success');
+                }
+                
+            } catch (error) {
+                log(`❌ System status check failed: ${error.message}`);
+                setStatus('system-status', 'System check failed', 'error');
+            }
+        };
+
+        window.testAudioSystem = function() {
+            log('🔊 Testing audio system...');
+
+            try {
+                // Test Web Audio API instead of data URL
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.1);
+                gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+
+                log('✅ Audio test successful - Web Audio API beep played');
+                setStatus('audio-status', 'Audio system working (Web Audio API)', 'success');
+
+            } catch (error) {
+                log(`❌ Audio system error: ${error.message}`);
+                setStatus('audio-status', 'Audio system error', 'error');
+            }
+        };
+
+        window.testUserInteraction = function() {
+            log('👆 Testing user interaction for audio...');
+
+            try {
+                // This function itself is a user interaction - use Web Audio API
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.4, audioContext.currentTime + 0.1);
+                gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 1.0);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 1.0);
+
+                log('✅ User interaction audio test successful');
+                setStatus('audio-status', 'User interaction audio working', 'success');
+
+            } catch (error) {
+                log(`❌ User interaction audio failed: ${error.message}`);
+                setStatus('audio-status', 'User interaction audio failed', 'error');
+            }
+        };
+
+        window.testDatabaseConnection = async function() {
+            log('🔗 Testing database connection...');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('orders')
+                    .select('id, order_number, customer_name, created_at')
+                    .limit(5);
+                
+                if (error) {
+                    log(`❌ Database query error: ${error.message}`);
+                    setStatus('database-status', 'Database connection failed', 'error');
+                } else {
+                    log(`✅ Database query successful - found ${data.length} orders`);
+                    setStatus('database-status', `Database working - ${data.length} orders found`, 'success');
+                }
+                
+            } catch (error) {
+                log(`❌ Database connection error: ${error.message}`);
+                setStatus('database-status', 'Database error', 'error');
+            }
+        };
+
+        window.testNotificationQuery = async function() {
+            log('📋 Testing notification query...');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('order_notifications')
+                    .select('*')
+                    .eq('is_read', false)
+                    .limit(10);
+                
+                if (error) {
+                    log(`❌ Notification query error: ${error.message}`);
+                    setStatus('database-status', 'Notification query failed', 'error');
+                } else {
+                    log(`✅ Notification query successful - found ${data.length} unread notifications`);
+                    setStatus('database-status', `Notifications working - ${data.length} unread`, 'success');
+                }
+                
+            } catch (error) {
+                log(`❌ Notification query error: ${error.message}`);
+                setStatus('database-status', 'Notification query error', 'error');
+            }
+        };
+
+        window.createTestOrder = async function() {
+            log('➕ Creating test order...');
+            
+            try {
+                const testOrder = {
+                    order_number: `TEST-${Date.now()}`,
+                    customer_name: 'Test Customer',
+                    customer_email: 'test@example.com',
+                    customer_phone: '+1234567890',
+                    customer_address: 'Test Address',
+                    total_amount: 25.99,
+                    status: 'confirmed',
+                    payment_status: 'pending',
+                    payment_method: 'test'
+                };
+                
+                const { data: order, error: orderError } = await supabase
+                    .from('orders')
+                    .insert([testOrder])
+                    .select()
+                    .single();
+                
+                if (orderError) {
+                    log(`❌ Order creation error: ${orderError.message}`);
+                    setStatus('order-status', 'Order creation failed', 'error');
+                    return;
+                }
+                
+                log(`✅ Test order created: ${order.order_number}`);
+                
+                // Create notification
+                const { error: notificationError } = await supabase
+                    .from('order_notifications')
+                    .insert({
+                        order_id: order.id,
+                        notification_type: 'new_order',
+                        title: 'Test Order!',
+                        message: `Test order from ${testOrder.customer_name} - €${testOrder.total_amount}`,
+                        is_read: false,
+                        is_acknowledged: false
+                    });
+                
+                if (notificationError) {
+                    log(`❌ Notification creation error: ${notificationError.message}`);
+                    setStatus('order-status', 'Notification creation failed', 'error');
+                } else {
+                    log('✅ Test notification created successfully');
+                    setStatus('order-status', 'Test order and notification created', 'success');
+                }
+                
+            } catch (error) {
+                log(`❌ Test order creation error: ${error.message}`);
+                setStatus('order-status', 'Test order creation failed', 'error');
+            }
+        };
+
+        window.createTestNotification = async function() {
+            log('🔔 Creating test notification...');
+            
+            try {
+                const { error } = await supabase
+                    .from('order_notifications')
+                    .insert({
+                        order_id: null, // Test notification without order
+                        notification_type: 'test',
+                        title: 'Test Notification!',
+                        message: `Test notification created at ${new Date().toLocaleTimeString()}`,
+                        is_read: false,
+                        is_acknowledged: false
+                    });
+                
+                if (error) {
+                    log(`❌ Test notification error: ${error.message}`);
+                    setStatus('order-status', 'Test notification failed', 'error');
+                } else {
+                    log('✅ Test notification created successfully');
+                    setStatus('order-status', 'Test notification created', 'success');
+                }
+                
+            } catch (error) {
+                log(`❌ Test notification creation error: ${error.message}`);
+                setStatus('order-status', 'Test notification creation failed', 'error');
+            }
+        };
+
+        window.runCompleteTest = async function() {
+            log('🚀 Running complete end-to-end test...');
+            setStatus('complete-test-status', 'Running complete test...', 'warning');
+            
+            try {
+                // Step 1: Check system
+                await checkSystemStatus();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Step 2: Test audio
+                testUserInteraction();
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Step 3: Test database
+                await testDatabaseConnection();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Step 4: Create test order with notification
+                await createTestOrder();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                log('🎉 Complete test finished - check individual results above');
+                setStatus('complete-test-status', 'Complete test finished - check results', 'success');
+                
+            } catch (error) {
+                log(`❌ Complete test error: ${error.message}`);
+                setStatus('complete-test-status', 'Complete test failed', 'error');
+            }
+        };
+
+        window.clearLog = function() {
+            document.getElementById('log-output').innerHTML = 'Test log cleared...\n';
+        };
+
+        // Auto-run system status check on load
+        window.addEventListener('load', () => {
+            setTimeout(checkSystemStatus, 1000);
+        });
+    </script>
+</body>
+</html>

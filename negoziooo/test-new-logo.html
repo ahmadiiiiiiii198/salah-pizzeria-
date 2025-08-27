@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test New Logo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            text-align: center;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            background: #f8f9fa;
+        }
+        .success {
+            color: #28a745;
+            margin-top: 15px;
+        }
+        .error {
+            color: #dc3545;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍕 New Logo Test</h1>
+        <p>Testing the new pizza emoji logo:</p>
+        
+        <div id="imageContainer">
+            <p>Loading...</p>
+        </div>
+        
+        <div id="status"></div>
+    </div>
+
+    <script>
+        const logoUrl = 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f355.png';
+        
+        const img = new Image();
+        const container = document.getElementById('imageContainer');
+        const status = document.getElementById('status');
+        
+        img.onload = function() {
+            console.log('✅ New logo loaded successfully!');
+            container.innerHTML = `<img src="${logoUrl}" alt="Pizza Logo" style="width: 128px; height: 128px;">`;
+            status.innerHTML = '<p class="success">✅ Logo loaded successfully!</p>';
+        };
+        
+        img.onerror = function() {
+            console.error('❌ New logo failed to load');
+            container.innerHTML = '<p class="error">❌ Failed to load</p>';
+            status.innerHTML = '<p class="error">Logo failed to load</p>';
+        };
+        
+        img.src = logoUrl;
+    </script>
+</body>
+</html>

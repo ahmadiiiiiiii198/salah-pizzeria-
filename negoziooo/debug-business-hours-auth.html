@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Hours Authentication Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .info { color: #17a2b8; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .test-section {
+            border-left: 4px solid #007bff;
+            padding-left: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Business Hours Authentication Debug</h1>
+    
+    <div class="container">
+        <h2>Current Authentication State</h2>
+        <div id="authStatus" class="log"></div>
+        <button onclick="checkAuthState()">Check Auth State</button>
+        <button onclick="checkAdminAuth()">Check Admin Auth</button>
+    </div>
+
+    <div class="container">
+        <h2>Business Hours Operations Test</h2>
+        <div id="businessHoursLog" class="log"></div>
+        <button onclick="testReadBusinessHours()">Test Read Business Hours</button>
+        <button onclick="testSaveBusinessHours()">Test Save Business Hours</button>
+        <button onclick="testWithServiceKey()">Test with Service Key</button>
+    </div>
+
+    <div class="container">
+        <h2>Authentication Solutions</h2>
+        <div id="solutionLog" class="log"></div>
+        <button onclick="createAnonymousSession()">Create Anonymous Session</button>
+        <button onclick="signInAsAdmin()">Sign In as Admin User</button>
+        <button onclick="testDirectDatabaseAccess()">Test Direct Database Access</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Initialize Supabase client
+        const SUPABASE_URL = 'https://htdgoceqepvrffblfvns.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZGdvY2VxZXB2cmZmYmxmdm5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY5NTI5NzQsImV4cCI6MjA1MjUyODk3NH0.Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function log(message, type = 'info', containerId = 'authStatus') {
+            const container = document.getElementById(containerId);
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}\n`;
+            container.innerHTML += `<span class="${type}">${logEntry}</span>`;
+            container.scrollTop = container.scrollHeight;
+            console.log(message);
+        }
+
+        async function checkAuthState() {
+            log('🔍 Checking current authentication state...', 'info', 'authStatus');
+            
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                
+                if (error) {
+                    log(`❌ Auth error: ${error.message}`, 'error', 'authStatus');
+                    return;
+                }
+
+                if (session) {
+                    log(`✅ Authenticated as: ${session.user.email}`, 'success', 'authStatus');
+                    log(`🔑 User ID: ${session.user.id}`, 'info', 'authStatus');
+                    log(`⏰ Session expires: ${new Date(session.expires_at * 1000).toLocaleString()}`, 'info', 'authStatus');
+                } else {
+                    log('❌ No active Supabase session', 'warning', 'authStatus');
+                }
+
+                // Check admin auth from localStorage
+                const adminAuth = localStorage.getItem('adminAuthenticated');
+                log(`🔐 Admin localStorage auth: ${adminAuth}`, adminAuth === 'true' ? 'success' : 'warning', 'authStatus');
+
+            } catch (error) {
+                log(`❌ Error checking auth state: ${error.message}`, 'error', 'authStatus');
+            }
+        }
+
+        async function checkAdminAuth() {
+            log('🔍 Checking admin authentication...', 'info', 'authStatus');
+            
+            const adminAuth = localStorage.getItem('adminAuthenticated');
+            const adminCredentials = localStorage.getItem('adminCredentials');
+            
+            log(`Admin authenticated: ${adminAuth}`, adminAuth === 'true' ? 'success' : 'warning', 'authStatus');
+            
+            if (adminCredentials) {
+                try {
+                    const creds = JSON.parse(adminCredentials);
+                    log(`Admin username: ${creds.username}`, 'info', 'authStatus');
+                } catch (e) {
+                    log('❌ Invalid admin credentials in localStorage', 'error', 'authStatus');
+                }
+            } else {
+                log('❌ No admin credentials in localStorage', 'warning', 'authStatus');
+            }
+        }
+
+        async function testReadBusinessHours() {
+            log('📖 Testing business hours read...', 'info', 'businessHoursLog');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('settings')
+                    .select('value')
+                    .eq('key', 'businessHours')
+                    .single();
+
+                if (error) {
+                    log(`❌ Read error: ${error.message}`, 'error', 'businessHoursLog');
+                    return;
+                }
+
+                if (data?.value) {
+                    log('✅ Successfully read business hours', 'success', 'businessHoursLog');
+                    log(`📋 Current hours: ${JSON.stringify(data.value, null, 2)}`, 'info', 'businessHoursLog');
+                } else {
+                    log('⚠️ No business hours data found', 'warning', 'businessHoursLog');
+                }
+            } catch (error) {
+                log(`❌ Read exception: ${error.message}`, 'error', 'businessHoursLog');
+            }
+        }
+
+        async function testSaveBusinessHours() {
+            log('💾 Testing business hours save...', 'info', 'businessHoursLog');
+            
+            const testHours = {
+                monday: { isOpen: true, openTime: '18:30', closeTime: '22:30' },
+                tuesday: { isOpen: true, openTime: '18:30', closeTime: '22:30' },
+                wednesday: { isOpen: true, openTime: '18:30', closeTime: '22:30' },
+                thursday: { isOpen: true, openTime: '18:30', closeTime: '22:30' },
+                friday: { isOpen: true, openTime: '18:30', closeTime: '22:30' },
+                saturday: { isOpen: true, openTime: '18:30', closeTime: '22:30' },
+                sunday: { isOpen: true, openTime: '18:30', closeTime: '22:30' }
+            };
+
+            try {
+                const { error } = await supabase
+                    .from('settings')
+                    .upsert({
+                        key: 'businessHours',
+                        value: testHours,
+                        updated_at: new Date().toISOString()
+                    }, {
+                        onConflict: 'key'
+                    });
+
+                if (error) {
+                    log(`❌ Save error: ${error.message}`, 'error', 'businessHoursLog');
+                    log(`🔍 Error details: ${JSON.stringify(error, null, 2)}`, 'error', 'businessHoursLog');
+                } else {
+                    log('✅ Successfully saved business hours!', 'success', 'businessHoursLog');
+                }
+            } catch (error) {
+                log(`❌ Save exception: ${error.message}`, 'error', 'businessHoursLog');
+            }
+        }
+
+        async function createAnonymousSession() {
+            log('🔐 Creating anonymous session...', 'info', 'solutionLog');
+            
+            try {
+                const { data, error } = await supabase.auth.signInAnonymously();
+                
+                if (error) {
+                    log(`❌ Anonymous sign-in error: ${error.message}`, 'error', 'solutionLog');
+                    return;
+                }
+
+                log('✅ Anonymous session created successfully!', 'success', 'solutionLog');
+                log(`🔑 User ID: ${data.user.id}`, 'info', 'solutionLog');
+                
+                // Now test saving business hours
+                await testSaveBusinessHours();
+                
+            } catch (error) {
+                log(`❌ Anonymous session exception: ${error.message}`, 'error', 'solutionLog');
+            }
+        }
+
+        async function signInAsAdmin() {
+            log('🔐 Signing in as admin user...', 'info', 'solutionLog');
+            
+            try {
+                // Try to sign in with a dummy admin email
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: 'admin@pizzeria.com',
+                    password: 'admin123'
+                });
+                
+                if (error) {
+                    log(`❌ Admin sign-in error: ${error.message}`, 'error', 'solutionLog');
+                    
+                    // Try to sign up the admin user
+                    log('🔄 Attempting to create admin user...', 'info', 'solutionLog');
+                    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+                        email: 'admin@pizzeria.com',
+                        password: 'admin123'
+                    });
+                    
+                    if (signUpError) {
+                        log(`❌ Admin sign-up error: ${signUpError.message}`, 'error', 'solutionLog');
+                    } else {
+                        log('✅ Admin user created successfully!', 'success', 'solutionLog');
+                    }
+                    return;
+                }
+
+                log('✅ Admin signed in successfully!', 'success', 'solutionLog');
+                log(`🔑 User ID: ${data.user.id}`, 'info', 'solutionLog');
+                
+                // Now test saving business hours
+                await testSaveBusinessHours();
+                
+            } catch (error) {
+                log(`❌ Admin sign-in exception: ${error.message}`, 'error', 'solutionLog');
+            }
+        }
+
+        async function testWithServiceKey() {
+            log('🔑 Testing with service key (if available)...', 'info', 'businessHoursLog');
+            log('⚠️ Service key should not be used in frontend code', 'warning', 'businessHoursLog');
+            log('💡 This is for debugging purposes only', 'info', 'businessHoursLog');
+        }
+
+        async function testDirectDatabaseAccess() {
+            log('🔍 Testing direct database access...', 'info', 'solutionLog');
+            
+            try {
+                // Test if we can access the settings table directly
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/settings?key=eq.businessHours&select=value`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    log(`❌ Direct access failed: ${response.status} ${response.statusText}`, 'error', 'solutionLog');
+                    return;
+                }
+
+                const data = await response.json();
+                log('✅ Direct database access successful!', 'success', 'solutionLog');
+                log(`📋 Data: ${JSON.stringify(data, null, 2)}`, 'info', 'solutionLog');
+
+            } catch (error) {
+                log(`❌ Direct access exception: ${error.message}`, 'error', 'solutionLog');
+            }
+        }
+
+        // Auto-run initial checks
+        window.onload = function() {
+            checkAuthState();
+            checkAdminAuth();
+        };
+    </script>
+</body>
+</html>
