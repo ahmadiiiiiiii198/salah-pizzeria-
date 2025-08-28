@@ -19,10 +19,13 @@ interface ProductCardProps {
   description?: string;
   onOrder?: (product: Product) => void;
   onViewDetails?: (product: Product) => void;
+<<<<<<< HEAD
   // Business hours props
   businessIsOpen?: boolean;
   businessMessage?: string;
   validateOrderTime?: (orderTime?: Date) => Promise<{ valid: boolean; message: string }>;
+=======
+>>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -32,10 +35,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
   image,
   description,
   onOrder,
+<<<<<<< HEAD
   onViewDetails,
   businessIsOpen = true,
   businessMessage = '',
   validateOrderTime
+=======
+  onViewDetails
+>>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
 }) => {
   const { toast } = useToast();
   const { addItem } = useSimpleCart();
@@ -50,6 +57,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const stockQuantity = product?.stock_quantity || 0;
 
   // Use stock management logic to determine availability
+<<<<<<< HEAD
   const isStockAvailable = isProductAvailable(stockQuantity);
   const stockStatus = getStockStatus(stockQuantity);
   const stockMessage = getStockMessage(stockQuantity);
@@ -57,6 +65,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
   // Combine stock availability with business hours
   const isAvailable = isStockAvailable && businessIsOpen;
 
+=======
+  const isAvailable = isProductAvailable(stockQuantity);
+  const stockStatus = getStockStatus(stockQuantity);
+  const stockMessage = getStockMessage(stockQuantity);
+
+>>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
   // Check if this is a pizza that can be customized (SEMPLICI or SPECIALI categories)
   const isPizza = product?.category_slug === 'semplici' || product?.category_slug === 'speciali';
   const isExtra = product?.category_slug === 'extra';
@@ -65,6 +79,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     e?.preventDefault();
     e?.stopPropagation();
 
+<<<<<<< HEAD
     console.log('🛒 Add to cart button clicked', { product, isAvailable, isPizza, businessIsOpen });
 
     // Check business hours first
@@ -99,6 +114,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
         return;
       }
     }
+=======
+    console.log('🛒 Add to cart button clicked', { product, isAvailable, isPizza });
+>>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
 
     if (product && isAvailable) {
       // For pizzas, open customization modal
@@ -255,6 +273,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700 cursor-pointer'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
+<<<<<<< HEAD
               title={
                 !businessIsOpen
                   ? 'Ordini non disponibili - Siamo chiusi'
@@ -269,6 +288,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     ? 'Prodotto non disponibile'
                     : (isPizza ? `Personalizza ${product.name}` : `Aggiungi ${product.name} al carrello`)
               }
+=======
+              title={isAvailable ? (isPizza ? 'Personalizza pizza' : 'Aggiungi al carrello') : 'Non disponibile'}
+              aria-label={isAvailable ? (isPizza ? `Personalizza ${product.name}` : `Aggiungi ${product.name} al carrello`) : 'Prodotto non disponibile'}
+>>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
             >
               <ShoppingCart size={20} className={isAvailable ? 'group-hover/btn:animate-bounce' : ''} />
             </button>
