@@ -976,11 +976,6 @@ html, body {
     }
   }
 
-
-
-
-}
-
 /* EFES KEBAP-specific utility classes */
 @layer utilities {
   .efes-btn-primary {
