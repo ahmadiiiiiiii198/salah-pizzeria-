@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 3000,
   },
+  publicDir: 'public',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
