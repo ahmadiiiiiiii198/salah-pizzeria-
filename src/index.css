@@ -718,7 +718,7 @@ html, body {
     padding-top: 8rem !important; /* 128px - ensures complete clearance of navbar */
   }
 
-<<<<<<< HEAD
+
   /* Hero background mobile optimizations */
   .hero-bg-mobile {
     /* Ensure background image displays properly on mobile */
@@ -731,14 +731,13 @@ html, body {
     will-change: transform;
   }
 
-=======
->>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
+
   /* Responsive navbar clearance */
   @media (max-width: 768px) {
     .hero-section {
       padding-top: 6rem !important; /* 96px - smaller navbar on mobile */
     }
-<<<<<<< HEAD
+
 
     /* Mobile-specific hero background fixes */
     .hero-bg-mobile {
@@ -800,8 +799,7 @@ html, body {
       opacity: 1 !important;
     }
   }
-=======
->>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
+
   }
 
   @media (min-width: 769px) and (max-width: 1023px) {
