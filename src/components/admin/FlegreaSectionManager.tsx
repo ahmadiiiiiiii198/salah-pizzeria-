@@ -28,7 +28,6 @@ const FlegreaSectionManager = () => {
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [tempImageUrls, setTempImageUrls] = useState<{[key: string]: string}>({});
   const [refreshKey, setRefreshKey] = useState(0);
-<<<<<<< HEAD
   const [formData, setFormData] = useState<{
     title: string;
     content: string;
@@ -42,8 +41,6 @@ const FlegreaSectionManager = () => {
     description_2: '',
     button_text: ''
   });
-=======
->>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
   const { toast } = useToast();
 
   useEffect(() => {
@@ -107,11 +104,7 @@ const FlegreaSectionManager = () => {
         console.log('Section updated successfully:', data);
         toast({
           title: "Success",
-<<<<<<< HEAD
           description: "Content updated successfully",
-=======
-          description: "Image updated successfully",
->>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
         });
         // Force reload content sections to get fresh data
         console.log('🔄 Forcing content reload...');
@@ -172,7 +165,6 @@ const FlegreaSectionManager = () => {
     handleImageUpload(sectionId, testUrl);
   }, [handleImageUpload]);
 
-<<<<<<< HEAD
   const initializeFormData = (section: ContentSection) => {
     setFormData({
       title: section.title || '',
@@ -218,8 +210,6 @@ const FlegreaSectionManager = () => {
     }
   };
 
-=======
->>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
   const handleTextUpdate = (sectionId: string, field: string, value: string) => {
     const section = contentSections.find(s => s.id === sectionId);
     if (!section) return;
@@ -285,7 +275,6 @@ const FlegreaSectionManager = () => {
               <Button
                 variant="outline"
                 size="sm"
-<<<<<<< HEAD
                 onClick={() => {
                   if (editingSection === mainSection.id) {
                     setEditingSection(null);
@@ -294,9 +283,6 @@ const FlegreaSectionManager = () => {
                     setEditingSection(mainSection.id);
                   }
                 }}
-=======
-                onClick={() => setEditingSection(editingSection === mainSection.id ? null : mainSection.id)}
->>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
               >
                 <Edit className="h-4 w-4 mr-2" />
                 {editingSection === mainSection.id ? 'Cancel' : 'Edit'}
@@ -308,13 +294,8 @@ const FlegreaSectionManager = () => {
               <label className="block text-sm font-medium mb-2">Title</label>
               {editingSection === mainSection.id ? (
                 <Input
-<<<<<<< HEAD
                   value={formData.title}
                   onChange={(e) => handleFormChange('title', e.target.value)}
-=======
-                  value={mainSection.title}
-                  onChange={(e) => handleTextUpdate(mainSection.id, 'title', e.target.value)}
->>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
                   placeholder="Section title"
                 />
               ) : (
@@ -326,13 +307,8 @@ const FlegreaSectionManager = () => {
               <label className="block text-sm font-medium mb-2">Main Content</label>
               {editingSection === mainSection.id ? (
                 <Textarea
-<<<<<<< HEAD
                   value={formData.content}
                   onChange={(e) => handleFormChange('content', e.target.value)}
-=======
-                  value={mainSection.content}
-                  onChange={(e) => handleTextUpdate(mainSection.id, 'content', e.target.value)}
->>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
                   placeholder="Main content text"
                   rows={3}
                 />
@@ -345,13 +321,8 @@ const FlegreaSectionManager = () => {
               <label className="block text-sm font-medium mb-2">Subtitle</label>
               {editingSection === mainSection.id ? (
                 <Textarea
-<<<<<<< HEAD
                   value={formData.subtitle}
                   onChange={(e) => handleFormChange('subtitle', e.target.value)}
-=======
-                  value={mainSection.metadata?.subtitle || ''}
-                  onChange={(e) => handleTextUpdate(mainSection.id, 'subtitle', e.target.value)}
->>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
                   placeholder="Subtitle text"
                   rows={2}
                 />
@@ -364,13 +335,8 @@ const FlegreaSectionManager = () => {
               <label className="block text-sm font-medium mb-2">Description 2</label>
               {editingSection === mainSection.id ? (
                 <Textarea
-<<<<<<< HEAD
                   value={formData.description_2}
                   onChange={(e) => handleFormChange('description_2', e.target.value)}
-=======
-                  value={mainSection.metadata?.description_2 || ''}
-                  onChange={(e) => handleTextUpdate(mainSection.id, 'description_2', e.target.value)}
->>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
                   placeholder="Second description text"
                   rows={2}
                 />
@@ -383,13 +349,8 @@ const FlegreaSectionManager = () => {
               <label className="block text-sm font-medium mb-2">Button Text</label>
               {editingSection === mainSection.id ? (
                 <Input
-<<<<<<< HEAD
                   value={formData.button_text}
                   onChange={(e) => handleFormChange('button_text', e.target.value)}
-=======
-                  value={mainSection.metadata?.button_text || ''}
-                  onChange={(e) => handleTextUpdate(mainSection.id, 'button_text', e.target.value)}
->>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
                   placeholder="Button text"
                 />
               ) : (
@@ -397,7 +358,6 @@ const FlegreaSectionManager = () => {
               )}
             </div>
 
-<<<<<<< HEAD
             {/* Save Button */}
             {editingSection === mainSection.id && (
               <div className="flex gap-2 pt-4">
@@ -424,9 +384,6 @@ const FlegreaSectionManager = () => {
                 </Button>
               </div>
             )}
-
-=======
->>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
             {editingSection === mainSection.id && (
               <Button
                 onClick={() => setEditingSection(null)}

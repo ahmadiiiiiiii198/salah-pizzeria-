@@ -154,15 +154,7 @@ const FlegreaPizzaSection = () => {
                 {mainSection.title}
               </p>
               <h2 className="text-3xl md:text-4xl font-playfair font-bold text-gray-800 mb-6 leading-tight">
-<<<<<<< HEAD
                 <span className="italic">{mainSection.content}</span>
-=======
-                <span className="italic">Gusta la nostra pizza in stile</span>
-                <br />
-                <span className="italic">napoletano dall'ottimo</span>
-                <br />
-                <span className="italic">cornicione alveolato.</span>
->>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
               </h2>
             </div>
 
@@ -172,17 +164,10 @@ const FlegreaPizzaSection = () => {
                 {metadata.subtitle}
               </p>
               <p className="leading-relaxed">
-<<<<<<< HEAD
                 {metadata.description_2}
               </p>
               <p className="leading-relaxed">
                 {metadata.description_3 || ''}
-=======
-                Le <strong>materie prime utilizzate sono di assoluta qualità</strong> con <strong>prodotti DOP, IGP e Slow Food</strong> provenienti dai migliori produttori e artigiani campani (e non).
-              </p>
-              <p className="leading-relaxed">
-                {metadata.description_2}
->>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
               </p>
             </div>
 

@@ -166,7 +166,6 @@ const Hero = () => {
 
         {/* Background image - Full screen background frame */}
         {((heroContent.backgroundImage && heroContent.backgroundImage.includes('supabase.co')) || videoError || !videoLoaded) && (
-<<<<<<< HEAD
           <>
             {/* Debug info for mobile */}
             {process.env.NODE_ENV === 'development' && (
@@ -208,28 +207,6 @@ const Hero = () => {
               }}
             ></div>
           </>
-=======
-          <div
-            key={heroContent.backgroundImage} // Force re-render when image changes
-            className="hero-bg-mobile"
-            style={{
-              backgroundImage: `url('${heroContent.backgroundImage}')`,
-              /* Full screen hero background frame */
-              backgroundSize: 'cover',
-              backgroundPosition: 'center center',
-              backgroundRepeat: 'no-repeat',
-              backgroundAttachment: window.innerWidth < 768 ? 'scroll' : 'fixed',
-              /* Full viewport coverage - no white space */
-              position: 'absolute',
-              top: 0,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '100vw',
-              height: '100%',
-              zIndex: -10
-            }}
-          ></div>
->>>>>>> 1e06c6979652c816bfa99930ea2ecf139b2840c5
         )}
 
         {/* Overlay removed - clean background image */}
