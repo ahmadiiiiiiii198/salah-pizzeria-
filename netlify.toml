@@ -1,11 +1,12 @@
 [build]
   publish = "dist"
-  command = "npm ci && npm run build"
+  command = "npm ci --legacy-peer-deps && npm run build"
 
 [build.environment]
-  NODE_VERSION = "18"
-  NPM_FLAGS = "--production=false"
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--production=false --legacy-peer-deps"
   CI = "true"
+  NODE_OPTIONS = "--max-old-space-size=4096"
 
 [[redirects]]
   from = "/*"

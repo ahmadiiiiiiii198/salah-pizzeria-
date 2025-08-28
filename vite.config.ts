@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => ({
     copyPublicDir: true,
     minify: 'esbuild',
     chunkSizeWarningLimit: 1000,
+    target: 'es2020',
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html')
@@ -36,6 +37,14 @@ export default defineConfig(({ mode }) => ({
           forms: ['react-hook-form', '@hookform/resolvers'],
           utils: ['clsx', 'class-variance-authority', 'date-fns']
         }
+      },
+      onwarn(warning, warn) {
+        // Suppress warnings about deprecated packages
+        if (warning.code === 'CIRCULAR_DEPENDENCY') return;
+        if (warning.message.includes('inflight') ||
+            warning.message.includes('rimraf') ||
+            warning.message.includes('glob')) return;
+        warn(warning);
       }
     }
   },
