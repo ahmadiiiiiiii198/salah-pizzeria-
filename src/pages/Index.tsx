@@ -16,6 +16,7 @@ import ServicesSection from '../components/ServicesSection';
 import ContactSection from '../components/ContactSection';
 import Footer from '../components/Footer';
 import BusinessHoursBanner from '../components/BusinessHoursBanner';
+import WebsitePopup from '../components/WebsitePopup';
 // Pizzeria Regina 2000 Torino - Complete transformation
 
 
@@ -85,6 +86,11 @@ const Index = () => {
           </div>
         </ErrorBoundary>
       </div>
+
+      {/* Website Popup - Global popup system */}
+      <ErrorBoundary componentName="WebsitePopup">
+        <WebsitePopup />
+      </ErrorBoundary>
     </div>
   );
 };
