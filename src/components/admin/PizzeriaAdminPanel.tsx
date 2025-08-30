@@ -56,10 +56,16 @@ const SystemTest = lazy(() => import('./SystemTest').catch(() => ({ default: () 
 const DatabaseTest = lazy(() => import('./DatabaseTest').catch(() => ({ default: () => <div>Error loading DatabaseTest</div> })));
 const SystemConnectionTest = lazy(() => import('../SystemConnectionTest').catch(() => ({ default: () => <div>Error loading SystemConnectionTest</div> })));
 const YouTubeConnectionTest = lazy(() => import('../YouTubeConnectionTest').catch(() => ({ default: () => <div>Error loading YouTubeConnectionTest</div> })));
-const BusinessHoursManager = lazy(() => import('./BusinessHoursManager').catch(() => ({ default: () => <div>Error loading BusinessHoursManager</div> })));
+const BusinessHoursManager = lazy(() => import('./BusinessHoursManager').catch((error) => {
+  console.error('Failed to load BusinessHoursManager:', error);
+  return { default: () => <div className="p-4 text-red-600">Error loading BusinessHoursManager: {error.message}</div> };
+}));
 const ContactInfoManager = lazy(() => import('./ContactInfoManager').catch(() => ({ default: () => <div>Error loading ContactInfoManager</div> })));
 const CategoryExtrasManager = lazy(() => import('./CategoryExtrasManager').catch(() => ({ default: () => <div>Error loading CategoryExtrasManager</div> })));
-const ShippingZoneManager = lazy(() => import('./ShippingZoneManager').catch(() => ({ default: () => <div>Error loading ShippingZoneManager</div> })));
+const ShippingZoneManager = lazy(() => import('./ShippingZoneManager').catch((error) => {
+  console.error('Failed to load ShippingZoneManager:', error);
+  return { default: () => <div className="p-4 text-red-600">Error loading ShippingZoneManager: {error.message}</div> };
+}));
 const IOSAudioTest = lazy(() => import('../IOSAudioTest').catch(() => ({ default: () => <div>Error loading IOSAudioTest</div> })));
 const StripeSettings = lazy(() => import('./StripeSettings').catch(() => ({ default: () => <div>Error loading StripeSettings</div> })));
 const NotificationSettings = lazy(() => import('./NotificationSettings').catch(() => ({ default: () => <div>Error loading NotificationSettings</div> })));

@@ -305,12 +305,41 @@ class BusinessHoursService {
 
   /**
    * Get formatted hours string for display
-   * NOTE: This returns hardcoded display hours for frontend consistency
-   * The actual business logic uses getBusinessHours() for order validation
    */
   async getFormattedHours(): Promise<string> {
-    // Return hardcoded "11-03" format for all days as requested for display
-    return 'lunedì: 11-03\nmartedì: 11-03\nmercoledì: 11-03\ngiovedì: 11-03\nvenerdì: 11-03\nsabato: 11-03\ndomenica: 11-03';
+    try {
+      const hours = await this.getBusinessHours();
+
+      const dayNames = [
+        { key: 'monday', label: 'lunedì' },
+        { key: 'tuesday', label: 'martedì' },
+        { key: 'wednesday', label: 'mercoledì' },
+        { key: 'thursday', label: 'giovedì' },
+        { key: 'friday', label: 'venerdì' },
+        { key: 'saturday', label: 'sabato' },
+        { key: 'sunday', label: 'domenica' }
+      ];
+
+      const formattedDays = dayNames.map(({ key, label }) => {
+        const dayHours = hours[key as keyof WeeklyHours];
+
+        if (!dayHours.isOpen) {
+          return `${label}: Chiuso`;
+        }
+
+        // Format time (remove seconds if present)
+        const formatTime = (time: string) => {
+          return time.substring(0, 5); // Keep only HH:MM
+        };
+
+        return `${label}: ${formatTime(dayHours.openTime)}-${formatTime(dayHours.closeTime)}`;
+      });
+
+      return formattedDays.join('\n');
+    } catch (error) {
+      console.error('Error formatting business hours:', error);
+      return 'Orari non disponibili';
+    }
   }
 
   /**
