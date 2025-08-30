@@ -719,22 +719,23 @@ html, body {
   }
 
 
-  /* Hero background mobile optimizations */
-  .hero-bg-mobile {
-    /* Ensure background image displays properly on mobile */
-    background-attachment: scroll !important;
-    background-size: cover !important;
-    background-position: center center !important;
-    background-repeat: no-repeat !important;
+  /* Hero background mobile optimizations - Use img element instead of background-image for iOS compatibility */
+  .hero-bg-mobile-img {
+    /* iOS Safari compatible image display */
+    object-fit: cover !important;
+    object-position: center center !important;
     /* Force hardware acceleration for better performance */
-    transform: translateZ(0);
-    will-change: transform;
+    -webkit-transform: translate3d(0, 0, 0) !important;
+    transform: translate3d(0, 0, 0) !important;
     /* iOS Safari specific fixes */
-    -webkit-background-size: cover !important;
-    -webkit-transform: translateZ(0) !important;
+    -webkit-backface-visibility: hidden !important;
+    backface-visibility: hidden !important;
     /* Prevent iOS image loading issues */
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
+    image-rendering: auto !important;
+    /* Force proper display */
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 
 
@@ -745,9 +746,9 @@ html, body {
     }
 
 
-    /* Mobile-specific hero background fixes */
-    .hero-bg-mobile {
-      /* Fix mobile background image issues */
+    /* Mobile-specific hero background fixes - img element approach for iOS compatibility */
+    .hero-bg-mobile-img {
+      /* Fix mobile background image issues using img element */
       position: absolute !important;
       top: 0 !important;
       left: 0 !important;
@@ -756,12 +757,9 @@ html, body {
       width: 100% !important;
       height: 100% !important;
       min-height: 70vh !important;
-      background-attachment: scroll !important;
-      /* Prevent iOS Safari background image issues */
-      -webkit-background-size: cover !important;
-      -moz-background-size: cover !important;
-      -o-background-size: cover !important;
-      background-size: cover !important;
+      /* iOS Safari image fixes */
+      object-fit: cover !important;
+      object-position: center center !important;
       /* Ensure proper z-index */
       z-index: -10 !important;
       /* Force display and prevent hiding */
@@ -773,12 +771,21 @@ html, body {
       transform: translate3d(0, 0, 0) !important;
       -webkit-backface-visibility: hidden !important;
       backface-visibility: hidden !important;
-      /* Force image loading on iOS */
-      content: '';
       /* Prevent iOS memory issues */
-      will-change: auto !important;
+      will-change: transform !important;
       /* iOS viewport fixes */
       min-height: -webkit-fill-available !important;
+      /* Prevent image selection on mobile */
+      -webkit-user-select: none !important;
+      -moz-user-select: none !important;
+      -ms-user-select: none !important;
+      user-select: none !important;
+      /* Prevent image dragging */
+      -webkit-user-drag: none !important;
+      -khtml-user-drag: none !important;
+      -moz-user-drag: none !important;
+      -o-user-drag: none !important;
+      user-drag: none !important;
     }
 
     /* Mobile hero container fixes */
@@ -794,18 +801,16 @@ html, body {
 
   /* Extra small mobile screens */
   @media (max-width: 480px) {
-    .hero-bg-mobile {
-      /* Even more aggressive fixes for small screens */
+    .hero-bg-mobile-img {
+      /* Even more aggressive fixes for small screens using img element */
       position: absolute !important;
       top: 0 !important;
       left: 0 !important;
       width: 100% !important;
       height: 100% !important;
       min-height: 70vh !important;
-      background-size: cover !important;
-      background-position: center !important;
-      background-repeat: no-repeat !important;
-      background-attachment: scroll !important;
+      object-fit: cover !important;
+      object-position: center !important;
       z-index: -10 !important;
       /* Prevent any potential hiding */
       display: block !important;
@@ -818,16 +823,17 @@ html, body {
       backface-visibility: hidden !important;
       /* iOS viewport height fix */
       min-height: -webkit-fill-available !important;
+      /* Force image rendering */
+      image-rendering: auto !important;
     }
   }
 
-  /* iOS Safari specific fixes */
+  /* iOS Safari specific fixes - img element approach */
   @supports (-webkit-touch-callout: none) {
-    .hero-bg-mobile {
-      /* iOS Safari background image fixes */
-      background-attachment: scroll !important;
-      -webkit-background-size: cover !important;
-      background-size: cover !important;
+    .hero-bg-mobile-img {
+      /* iOS Safari image fixes using img element */
+      object-fit: cover !important;
+      object-position: center center !important;
       /* Force hardware acceleration */
       -webkit-transform: translate3d(0, 0, 0) !important;
       transform: translate3d(0, 0, 0) !important;
@@ -839,10 +845,15 @@ html, body {
       min-height: 70vh !important;
       max-height: 70vh !important;
       /* Force image rendering */
-      image-rendering: -webkit-optimize-contrast !important;
+      image-rendering: auto !important;
       /* Prevent iOS memory issues */
-      -webkit-transform-style: preserve-3d !important;
-      transform-style: preserve-3d !important;
+      will-change: transform !important;
+      /* Prevent image interaction */
+      pointer-events: none !important;
+      /* Force display */
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
     }
 
     .hero-container-mobile {
@@ -855,21 +866,20 @@ html, body {
       -webkit-transform: translateZ(0) !important;
       transform: translateZ(0) !important;
     }
-
-    /* iOS image element specific fixes */
-    .hero-bg-mobile img {
-      /* Force iOS to display the image */
-      -webkit-transform: translate3d(0, 0, 0) !important;
-      transform: translate3d(0, 0, 0) !important;
-      -webkit-backface-visibility: hidden !important;
-      backface-visibility: hidden !important;
-      /* Prevent iOS image scaling issues */
-      image-rendering: -webkit-optimize-contrast !important;
-      /* Force hardware acceleration */
-      will-change: transform !important;
-    }
   }
 
+  }
+
+  /* Desktop fallback - use background-image for non-iOS devices */
+  @media (min-width: 769px) {
+    .hero-bg-mobile-img {
+      /* On desktop, we can still use img element for consistency */
+      object-fit: cover !important;
+      object-position: center center !important;
+      /* Desktop optimizations */
+      transform: translateZ(0) !important;
+      will-change: auto !important;
+    }
   }
 
   @media (min-width: 769px) and (max-width: 1023px) {

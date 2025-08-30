@@ -215,64 +215,43 @@ const Hero = () => {
               </div>
             )}
 
-            {/* iOS-optimized background image */}
-            {isIOS ? (
-              <img
-                src={heroContent.backgroundImage}
-                alt=""
-                className="hero-bg-mobile"
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  width: '100%',
-                  height: '100%',
-                  minHeight: '70vh',
-                  objectFit: 'cover',
-                  objectPosition: 'center center',
-                  zIndex: -10,
-                  display: 'block',
-                  /* iOS-specific optimizations */
-                  WebkitTransform: 'translate3d(0, 0, 0)',
-                  transform: 'translate3d(0, 0, 0)',
-                  WebkitBackfaceVisibility: 'hidden',
-                  backfaceVisibility: 'hidden'
-                }}
-                onLoad={() => setBackgroundImageLoaded(true)}
-                onError={() => setBackgroundImageLoaded(false)}
-              />
-            ) : (
-              <div
-                key={heroContent.backgroundImage} // Force re-render when image changes
-                className="hero-bg-mobile"
-                style={{
-                  backgroundImage: `url('${heroContent.backgroundImage}')`,
-                  /* Full screen hero background frame */
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center center',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundAttachment: 'scroll', // Always use scroll on mobile for better performance
-                  /* Full viewport coverage - no white space */
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  width: '100%',
-                  height: '100%',
-                  minHeight: '70vh',
-                  zIndex: -10,
-                  /* Mobile-specific optimizations */
-                  WebkitBackgroundSize: 'cover',
-                  MozBackgroundSize: 'cover',
-                  OBackgroundSize: 'cover',
-                  /* Force image to load */
-                  display: 'block'
-                }}
-              ></div>
-            )}
+            {/* Always use img element for mobile - iOS Safari background-attachment: fixed is broken */}
+            <img
+              src={heroContent.backgroundImage}
+              alt=""
+              className="hero-bg-mobile-img"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                width: '100%',
+                height: '100%',
+                minHeight: '70vh',
+                objectFit: 'cover',
+                objectPosition: 'center center',
+                zIndex: -10,
+                display: 'block',
+                /* iOS Safari compatibility */
+                WebkitTransform: 'translate3d(0, 0, 0)',
+                transform: 'translate3d(0, 0, 0)',
+                WebkitBackfaceVisibility: 'hidden',
+                backfaceVisibility: 'hidden',
+                /* Prevent iOS image scaling issues */
+                imageRendering: 'auto',
+                /* Force hardware acceleration */
+                willChange: 'transform'
+              }}
+              onLoad={() => {
+                setBackgroundImageLoaded(true);
+                console.log('🖼️ [Hero] Background image loaded successfully on mobile');
+              }}
+              onError={() => {
+                setBackgroundImageLoaded(false);
+                console.error('❌ [Hero] Background image failed to load on mobile');
+              }}
+            />
           </>
         )}
 
