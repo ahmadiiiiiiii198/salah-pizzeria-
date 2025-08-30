@@ -39,14 +39,14 @@ const Header = () => {
       <header className="fixed top-0 w-full bg-white shadow-lg border-b border-gray-200 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-8 animate-fade-in-left">
-              <div className="flex items-center space-x-3 logo-container hover-scale">
+            <div className="flex items-center space-x-8">
+              <div className="flex items-center space-x-3 logo-container hover-elegant-glow">
                 {/* Database-driven logo display */}
                 {navbarLogoSettings.showLogo && !isNavbarLogoLoading && (
                   <img
                     src={navbarLogoSettings.logoUrl}
                     alt={navbarLogoSettings.altText}
-                    className={`transition-all duration-300 hover:scale-105 ${
+                    className={`transition-all duration-500 hover-gentle-scale animate-gentle-float ${
                       navbarLogoSettings.logoSize === 'small' ? 'h-16 w-auto' :
                       navbarLogoSettings.logoSize === 'large' ? 'h-28 w-auto' :
                       'h-24 w-auto'
@@ -62,7 +62,7 @@ const Header = () => {
 
                 {/* Loading placeholder */}
                 {isNavbarLogoLoading && (
-                  <div className={`bg-gray-200 animate-pulse rounded ${
+                  <div className={`bg-gray-200 animate-skeleton-loading rounded-xl ${
                     navbarLogoSettings.logoSize === 'small' ? 'h-16 w-16' :
                     navbarLogoSettings.logoSize === 'large' ? 'h-28 w-28' :
                     'h-24 w-24'
@@ -70,30 +70,30 @@ const Header = () => {
                 )}
 
                 {/* Fallback text logo */}
-                <div className="h-12 hidden items-center px-4 bg-gradient-to-r from-efes-gold to-efes-dark-gold text-white rounded-xl font-fredoka font-bold text-lg shadow-lg">
+                <div className="h-12 hidden items-center px-4 bg-gradient-to-r from-efes-gold to-efes-dark-gold text-white rounded-xl font-fredoka font-bold text-lg shadow-lg animate-subtle-glow hover-elegant-glow">
                   🥙 EFES KEBAP
                 </div>
               </div>
               <nav className="hidden md:flex space-x-8">
-                <a href="/" className="text-gray-700 hover:text-efes-gold transition-colors font-medium relative group">
+                <a href="/" className="text-gray-700 hover:text-efes-gold transition-all duration-300 font-medium relative group hover-elegant-glow">
                   {t('home')}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-efes-gold transition-all duration-300 group-hover:w-full"></span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-efes-gold to-efes-dark-gold transition-all duration-500 group-hover:w-full"></span>
                 </a>
-                <a href="/#products" className="text-gray-700 hover:text-efes-gold transition-colors font-medium relative group">
+                <a href="/#products" className="text-gray-700 hover:text-efes-gold transition-all duration-300 font-medium relative group hover-elegant-glow">
                   {t('menu')}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-efes-gold transition-all duration-300 group-hover:w-full"></span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-efes-gold to-efes-dark-gold transition-all duration-500 group-hover:w-full"></span>
                 </a>
-                <a href="/#gallery" className="text-gray-700 hover:text-efes-gold transition-colors font-medium relative group">
+                <a href="/#gallery" className="text-gray-700 hover:text-efes-gold transition-all duration-300 font-medium relative group hover-elegant-glow">
                   {t('gallery')}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-efes-gold transition-all duration-300 group-hover:w-full"></span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-efes-gold to-efes-dark-gold transition-all duration-500 group-hover:w-full"></span>
                 </a>
-                <a href="/#about" className="text-gray-700 hover:text-efes-gold transition-colors font-medium relative group">
+                <a href="/#about" className="text-gray-700 hover:text-efes-gold transition-all duration-300 font-medium relative group hover-elegant-glow">
                   {t('about')}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-efes-gold transition-all duration-300 group-hover:w-full"></span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-efes-gold to-efes-dark-gold transition-all duration-500 group-hover:w-full"></span>
                 </a>
-                <a href="/#contact" className="text-gray-700 hover:text-efes-gold transition-colors font-medium relative group">
+                <a href="/#contact" className="text-gray-700 hover:text-efes-gold transition-all duration-300 font-medium relative group hover-elegant-glow">
                   {t('contact')}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-efes-gold transition-all duration-300 group-hover:w-full"></span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-efes-gold to-efes-dark-gold transition-all duration-500 group-hover:w-full"></span>
                 </a>
               </nav>
             </div>
@@ -143,7 +143,7 @@ const Header = () => {
                     console.error('❌ Error opening order modal:', error);
                   }
                 }}
-                className="hidden sm:flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-efes-gold to-efes-dark-gold text-white rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300 font-bold font-montserrat border border-efes-light-gold/30 cursor-pointer focus:outline-none focus:ring-2 focus:ring-efes-gold focus:ring-offset-2"
+                className="hidden sm:flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-efes-gold to-efes-dark-gold text-white rounded-lg hover:shadow-lg hover-elegant-glow transition-all duration-500 font-bold font-montserrat border border-efes-light-gold/30 cursor-pointer focus:outline-none focus:ring-2 focus:ring-efes-gold focus:ring-offset-2 animate-button-pulse ripple-effect animate-elegant-scale-in animate-stagger-3"
                 aria-label="Ordina ora"
                 title="Ordina ora"
               >
@@ -161,7 +161,7 @@ const Header = () => {
                     console.error('❌ Error opening cart:', error);
                   }
                 }}
-                className="relative p-3 text-white hover:text-amber-100 transition-colors bg-white/20 hover:bg-white/30 rounded-full group shadow-md hover:shadow-lg hover-lift animate-bounce-gentle animate-scale-in animate-stagger-3 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
+                className="relative p-3 text-white hover:text-amber-100 transition-all duration-500 bg-white/20 hover:bg-white/30 rounded-full group shadow-md hover:shadow-lg hover-elegant-glow animate-gentle-float animate-elegant-scale-in animate-stagger-4 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 glass-morphism"
                 aria-label={`Apri carrello (${getTotalItems()} articoli)`}
                 title={`Carrello (${getTotalItems()} articoli)`}
               >

@@ -124,15 +124,15 @@ const WebsitePopup: React.FC = () => {
   if (!activePopup || !isOpen || isAdmin) return null;
   
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 animate-fade-in">
-      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-auto">
-        <Button 
-          variant="ghost" 
-          size="icon" 
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 animate-elegant-fade-in-up backdrop-blur-sm">
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-auto animate-elegant-scale-in glass-morphism hover-card-lift">
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={closePopup}
-          className="absolute top-2 right-2 z-10"
+          className="absolute top-2 right-2 z-10 hover-elegant-glow transition-all duration-300 rounded-full"
         >
-          <X size={18} />
+          <X size={18} className="animate-gentle-float" />
         </Button>
         
         {activePopup.image && (
@@ -147,12 +147,17 @@ const WebsitePopup: React.FC = () => {
         )}
         
         <div className="p-6">
-          <h3 className="text-xl font-bold mb-2">{activePopup.title}</h3>
-          <div className="prose prose-sm max-w-none whitespace-pre-wrap">
+          <h3 className="text-xl font-bold mb-2 animate-elegant-fade-in-up animate-text-shimmer">{activePopup.title}</h3>
+          <div className="prose prose-sm max-w-none whitespace-pre-wrap animate-elegant-fade-in-up animate-stagger-1">
             {activePopup.content}
           </div>
-          <div className="mt-4 flex justify-end">
-            <Button onClick={closePopup}>Close</Button>
+          <div className="mt-4 flex justify-end animate-elegant-fade-in-up animate-stagger-2">
+            <Button
+              onClick={closePopup}
+              className="hover-elegant-glow transition-all duration-300 ripple-effect"
+            >
+              Close
+            </Button>
           </div>
         </div>
       </div>

@@ -412,17 +412,17 @@ const Products = () => {
           </div>
 
           {/* Search Section */}
-          <div className="max-w-2xl mx-auto mb-12 animate-fade-in-up animate-stagger-3">
-            <div className="relative">
+          <div className="max-w-2xl mx-auto mb-12 animate-elegant-scale-in animate-stagger-3">
+            <div className="relative hover-elegant-glow">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-pizza-brown/60" />
+                <Search className="h-5 w-5 text-pizza-brown/60 animate-gentle-float" />
               </div>
               <input
                 type="text"
                 placeholder="Cerca pizze, bevande, dolci... 🔍"
                 value={searchTerm}
                 onChange={handleSearchChange}
-                className="w-full pl-12 pr-12 py-4 bg-white/95 border-2 border-pizza-orange/20 rounded-2xl text-pizza-dark placeholder-pizza-brown/60 focus:outline-none focus:border-pizza-orange focus:ring-4 focus:ring-pizza-orange/20 transition-all duration-300 shadow-lg hover:shadow-xl font-roboto text-lg"
+                className="w-full pl-12 pr-12 py-4 bg-white/95 border-2 border-pizza-orange/20 rounded-2xl text-pizza-dark placeholder-pizza-brown/60 focus:outline-none focus:border-pizza-orange focus:ring-4 focus:ring-pizza-orange/20 transition-all duration-500 shadow-lg hover:shadow-xl font-roboto text-lg glass-morphism hover-gentle-scale"
               />
               {searchTerm && (
                 <button
@@ -492,12 +492,13 @@ const Products = () => {
               return (
                 <div
                   key={categorySlug}
-                  className="bg-efes-dark-navy rounded-lg overflow-hidden border border-efes-gold/20 shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="bg-efes-dark-navy rounded-lg overflow-hidden border border-efes-gold/20 shadow-lg hover:shadow-xl transition-all duration-500 hover-card-lift animate-elegant-fade-in-up glass-morphism-dark"
+                  style={{ animationDelay: `${categoryIndex * 150}ms` }}
                 >
                   {/* Category Header - Clickable */}
                   <button
                     onClick={() => toggleCategoryExpansion(categorySlug)}
-                    className="w-full p-4 flex items-center justify-between hover:bg-efes-charcoal/50 transition-colors duration-200"
+                    className="w-full p-4 flex items-center justify-between hover:bg-efes-charcoal/50 transition-all duration-300 hover-elegant-glow ripple-effect"
                   >
                     <div className="flex items-center gap-3">
                       <div className="text-efes-gold p-2 bg-efes-gold/10 rounded-lg">
@@ -538,7 +539,7 @@ const Products = () => {
                         {categoryProducts.map((product, productIndex) => (
                           <div
                             key={product.id}
-                            className="animate-fade-in-up"
+                            className="animate-elegant-scale-in hover-card-lift"
                             style={{ animationDelay: `${productIndex * 100}ms` }}
                           >
                             <ProductCard
@@ -559,8 +560,8 @@ const Products = () => {
           </div>
 
           {/* Call to Action */}
-          <div className="mt-16 text-center animate-slide-in-up animate-stagger-5">
-            <div className="bg-gradient-to-br from-pizza-cream/50 via-white to-pizza-orange/10 rounded-2xl p-8 border border-pizza-orange/20 hover-lift animate-pulse-glow">
+          <div className="mt-16 text-center animate-elegant-fade-in-up animate-stagger-5">
+            <div className="bg-gradient-to-br from-pizza-cream/50 via-white to-pizza-orange/10 rounded-2xl p-8 border border-pizza-orange/20 hover-card-lift animate-subtle-glow glass-morphism">
               <div className="flex items-center justify-center mb-4">
                 <Pizza className="text-pizza-red animate-pizza-spin mr-3" size={32} />
                 <h3 className="text-2xl font-bold text-pizza-dark font-fredoka animate-fade-in-up">
@@ -574,7 +575,7 @@ const Products = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up animate-stagger-2">
                 <button
                   onClick={() => setIsOrderModalOpen(true)}
-                  className="bg-gradient-to-r from-pizza-red to-pizza-orange text-white px-8 py-4 rounded-full hover:from-pizza-red hover:to-pizza-tomato transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 hover-glow animate-heartbeat font-fredoka font-bold text-lg"
+                  className="bg-gradient-to-r from-pizza-red to-pizza-orange text-white px-8 py-4 rounded-full hover:from-pizza-red hover:to-pizza-tomato transition-all duration-500 shadow-lg hover:shadow-xl hover-elegant-glow animate-button-pulse font-fredoka font-bold text-lg ripple-effect"
                 >
                   Richiedi Preventivo Personalizzato
                 </button>
@@ -585,7 +586,7 @@ const Products = () => {
                       contactSection.scrollIntoView({ behavior: 'smooth' });
                     }
                   }}
-                  className="border-2 border-emerald-500 text-emerald-600 px-8 py-3 rounded-full hover:bg-emerald-50 transition-all duration-300 hover-lift animate-bounce-gentle"
+                  className="border-2 border-emerald-500 text-emerald-600 px-8 py-3 rounded-full hover:bg-emerald-50 transition-all duration-500 hover-card-lift animate-gentle-float glass-morphism"
                 >
                   Contattaci
                 </button>
