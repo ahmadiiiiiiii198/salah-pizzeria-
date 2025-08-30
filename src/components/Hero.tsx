@@ -5,6 +5,7 @@ import { usePizzeriaHours } from '@/hooks/usePizzeriaHours';
 import { useCustomerAuth } from '@/hooks/useCustomerAuth';
 import { useHeroContent } from '@/hooks/use-settings';
 import type { HeroContent } from '@/types/hero';
+import { iosImageDebugger } from '@/utils/iosImageDebug';
 
 const Hero = () => {
   const { t } = useLanguage();
@@ -17,6 +18,33 @@ const Hero = () => {
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const [backgroundImageLoaded, setBackgroundImageLoaded] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+
+  // Detect iOS devices
+  useEffect(() => {
+    const detectIOS = () => {
+      return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+             (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    };
+    setIsIOS(detectIOS());
+  }, []);
+
+  // Preload background image for better iOS performance
+  useEffect(() => {
+    if (heroContent.backgroundImage && heroContent.backgroundImage.includes('supabase.co')) {
+      const img = new Image();
+      img.onload = () => {
+        console.log('🖼️ [Hero] Background image preloaded successfully');
+        setBackgroundImageLoaded(true);
+      };
+      img.onerror = () => {
+        console.warn('⚠️ [Hero] Background image failed to preload');
+        setBackgroundImageLoaded(false);
+      };
+      img.src = heroContent.backgroundImage;
+    }
+  }, [heroContent.backgroundImage]);
 
   // Listen for hero content updates from admin panel
   useEffect(() => {
@@ -52,8 +80,15 @@ const Hero = () => {
       console.log('🍕 [Hero] Current hero content:', heroContent);
       console.log('🖼️ [Hero] Background image:', heroContent.backgroundImage);
       console.log('✅ [Hero] Is uploaded image:', heroContent.backgroundImage && heroContent.backgroundImage.includes('supabase.co'));
+      console.log('📱 [Hero] Is iOS device:', isIOS);
+      console.log('🖼️ [Hero] Background image loaded:', backgroundImageLoaded);
+
+      // Run iOS image test in development
+      if (process.env.NODE_ENV === 'development' && isIOS && heroContent.backgroundImage) {
+        iosImageDebugger.runIOSImageTest(heroContent.backgroundImage);
+      }
     }
-  }, [heroContent, heroLoading]);
+  }, [heroContent, heroLoading, isIOS, backgroundImageLoaded]);
 
   // Show loading skeleton while data is being fetched
   if (isLoading) {
@@ -174,38 +209,70 @@ const Hero = () => {
                 Image: {heroContent.backgroundImage ? '✅' : '❌'}<br/>
                 Supabase: {heroContent.backgroundImage?.includes('supabase.co') ? '✅' : '❌'}<br/>
                 Video Error: {videoError ? '✅' : '❌'}<br/>
-                Video Loaded: {videoLoaded ? '✅' : '❌'}
+                Video Loaded: {videoLoaded ? '✅' : '❌'}<br/>
+                iOS Device: {isIOS ? '✅' : '❌'}<br/>
+                BG Loaded: {backgroundImageLoaded ? '✅' : '❌'}
               </div>
             )}
 
-            <div
-              key={heroContent.backgroundImage} // Force re-render when image changes
-              className="hero-bg-mobile"
-              style={{
-                backgroundImage: `url('${heroContent.backgroundImage}')`,
-                /* Full screen hero background frame */
-                backgroundSize: 'cover',
-                backgroundPosition: 'center center',
-                backgroundRepeat: 'no-repeat',
-                backgroundAttachment: 'scroll', // Always use scroll on mobile for better performance
-                /* Full viewport coverage - no white space */
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                width: '100%',
-                height: '100%',
-                minHeight: '70vh',
-                zIndex: -10,
-                /* Mobile-specific optimizations */
-                WebkitBackgroundSize: 'cover',
-                MozBackgroundSize: 'cover',
-                OBackgroundSize: 'cover',
-                /* Force image to load */
-                display: 'block'
-              }}
-            ></div>
+            {/* iOS-optimized background image */}
+            {isIOS ? (
+              <img
+                src={heroContent.backgroundImage}
+                alt=""
+                className="hero-bg-mobile"
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  width: '100%',
+                  height: '100%',
+                  minHeight: '70vh',
+                  objectFit: 'cover',
+                  objectPosition: 'center center',
+                  zIndex: -10,
+                  display: 'block',
+                  /* iOS-specific optimizations */
+                  WebkitTransform: 'translate3d(0, 0, 0)',
+                  transform: 'translate3d(0, 0, 0)',
+                  WebkitBackfaceVisibility: 'hidden',
+                  backfaceVisibility: 'hidden'
+                }}
+                onLoad={() => setBackgroundImageLoaded(true)}
+                onError={() => setBackgroundImageLoaded(false)}
+              />
+            ) : (
+              <div
+                key={heroContent.backgroundImage} // Force re-render when image changes
+                className="hero-bg-mobile"
+                style={{
+                  backgroundImage: `url('${heroContent.backgroundImage}')`,
+                  /* Full screen hero background frame */
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center center',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundAttachment: 'scroll', // Always use scroll on mobile for better performance
+                  /* Full viewport coverage - no white space */
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  width: '100%',
+                  height: '100%',
+                  minHeight: '70vh',
+                  zIndex: -10,
+                  /* Mobile-specific optimizations */
+                  WebkitBackgroundSize: 'cover',
+                  MozBackgroundSize: 'cover',
+                  OBackgroundSize: 'cover',
+                  /* Force image to load */
+                  display: 'block'
+                }}
+              ></div>
+            )}
           </>
         )}
 
