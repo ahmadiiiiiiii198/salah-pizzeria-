@@ -17,8 +17,56 @@ const Products = () => {
   const [isSearchActive, setIsSearchActive] = useState(false);
 
   // Get business hours for all product cards
-  const { isOpen: businessIsOpen, message: businessMessage, validateOrderTime } = useBusinessHoursContext();
+  const {
+    isOpen: businessIsOpen,
+    message: businessMessage,
+    validateOrderTime,
+    formattedHours,
+    todayHours
+  } = useBusinessHoursContext();
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+
+  // Function to format business hours for availability display
+  const formatAvailabilityHours = useCallback(() => {
+    if (!formattedHours) return "Controlla i nostri orari di apertura";
+
+    // Parse the formatted hours and create a more readable format
+    const lines = formattedHours.split('\n');
+    const openDays = lines
+      .filter(line => !line.includes('Chiuso'))
+      .map(line => {
+        const [day, hours] = line.split(': ');
+        const dayAbbr = day.substring(0, 3).toUpperCase();
+        return { day: dayAbbr, hours };
+      });
+
+    if (openDays.length === 0) return "Attualmente chiuso";
+
+    // Group consecutive days with same hours
+    const groupedDays = [];
+    let currentGroup = [openDays[0]];
+
+    for (let i = 1; i < openDays.length; i++) {
+      if (openDays[i].hours === currentGroup[0].hours) {
+        currentGroup.push(openDays[i]);
+      } else {
+        groupedDays.push(currentGroup);
+        currentGroup = [openDays[i]];
+      }
+    }
+    groupedDays.push(currentGroup);
+
+    // Format the display
+    const formattedGroups = groupedDays.map(group => {
+      const days = group.length > 1
+        ? `${group[0].day}-${group[group.length - 1].day}`
+        : group[0].day;
+      const hours = group[0].hours.replace('-', ' alle ');
+      return `${days} dalle ${hours}`;
+    });
+
+    return `Disponibile ${formattedGroups.join(', ')}`;
+  }, [formattedHours]);
   const [productsContent, setProductsContent] = useState({
     heading: "I Nostri Piatti",
     subheading: "Autentico kebap turco e pizza italiana preparati con ingredienti freschi e tecniche tradizionali",
@@ -410,13 +458,17 @@ const Products = () => {
             {/* Availability Status */}
             <div className="bg-efes-dark-navy rounded-lg p-4 flex items-center justify-between border border-efes-gold/20">
               <div className="flex items-center gap-3">
-                <div className="w-3 h-3 bg-efes-gold rounded-full animate-pulse"></div>
+                <div className={`w-3 h-3 rounded-full ${businessIsOpen ? 'bg-green-500' : 'bg-efes-gold'} ${businessIsOpen ? '' : 'animate-pulse'}`}></div>
                 <span className="text-efes-warm-white text-sm font-raleway">
-                  Disponibile MAR, MER, GIO, VEN dalle 12:00 alle 14:30
+                  {formatAvailabilityHours()}
                 </span>
               </div>
-              <span className="bg-efes-charcoal text-efes-warm-white px-3 py-1 rounded-full text-xs font-medium font-montserrat">
-                NON DISPONIBILE
+              <span className={`px-3 py-1 rounded-full text-xs font-medium font-montserrat ${
+                businessIsOpen
+                  ? 'bg-green-600 text-white'
+                  : 'bg-efes-charcoal text-efes-warm-white'
+              }`}>
+                {businessIsOpen ? 'DISPONIBILE' : 'NON DISPONIBILE'}
               </span>
             </div>
 
