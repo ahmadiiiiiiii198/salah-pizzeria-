@@ -23,93 +23,73 @@ import WebsitePopup from '../components/WebsitePopup';
 const Index = () => {
   return (
     <div className="min-h-screen font-inter">
-      {/* Header with elegant entrance */}
-      <div className="animate-elegant-fade-in-down">
-        <Header />
-      </div>
-
-      {/* Business Hours Banner with subtle animation */}
-      <div className="animate-elegant-fade-in-up animate-stagger-1">
-        <BusinessHoursBanner />
-      </div>
-
-      {/* Hero Section with dramatic entrance */}
+      <Header />
+      <BusinessHoursBanner />
       <ErrorBoundary componentName="Hero">
-        <div className="animate-elegant-scale-in animate-stagger-2">
-          <HeroNew />
-        </div>
+        <HeroNew />
       </ErrorBoundary>
 
       <div className="overflow-x-hidden" style={{ marginTop: 0, paddingTop: 0 }}>
-        {/* Order Tracking with smooth entrance */}
         <ErrorBoundary componentName="OrderTrackingSection">
-          <div className="animate-elegant-fade-in-up animate-stagger-3 hover-card-lift" style={{ marginTop: 0, paddingTop: 0 }}>
+          <div className="animate-fade-in-up animate-stagger-1" style={{ marginTop: 0, paddingTop: 0 }}>
             <OrderTrackingSection />
           </div>
         </ErrorBoundary>
 
-        {/* Why Choose Us with left slide */}
+
+
         <ErrorBoundary componentName="WhyChooseUsSection">
-          <div className="animate-elegant-fade-in-left animate-stagger-4 hover-gentle-scale">
+          <div className="animate-fade-in-up animate-stagger-2">
             <WhyChooseUsSection />
           </div>
         </ErrorBoundary>
 
-        {/* Flegrea Pizza with right slide */}
         <ErrorBoundary componentName="FlegreaPizzaSection">
-          <div className="animate-elegant-fade-in-right animate-stagger-5 hover-card-lift">
+          <div className="animate-fade-in-up animate-stagger-3">
             <FlegreaPizzaSection />
           </div>
         </ErrorBoundary>
 
-        {/* Products with scale entrance */}
         <ErrorBoundary componentName="Products">
-          <div className="animate-elegant-scale-in animate-stagger-6 hover-elegant-glow">
+          <div className="animate-fade-in-up animate-stagger-4">
             <Products />
           </div>
         </ErrorBoundary>
 
-        {/* Gallery with elegant fade */}
         <ErrorBoundary componentName="Gallery">
-          <div className="animate-elegant-fade-in-up animate-stagger-7 hover-card-lift">
+          <div className="animate-fade-in-up animate-stagger-5">
             <Gallery />
           </div>
         </ErrorBoundary>
 
-        {/* About with slide up */}
         <ErrorBoundary componentName="About">
-          <div className="animate-slide-in-up animate-stagger-8 hover-gentle-scale">
+          <div className="animate-slide-in-up animate-stagger-6">
             <About />
           </div>
         </ErrorBoundary>
 
-        {/* Services with left entrance */}
         <ErrorBoundary componentName="ServicesSection">
-          <div className="animate-elegant-fade-in-left animate-stagger-9 hover-card-lift">
+          <div className="animate-fade-in-up animate-stagger-7">
             <ServicesSection />
           </div>
         </ErrorBoundary>
 
-        {/* Contact with elegant entrance */}
         <ErrorBoundary componentName="ContactSection">
-          <div className="animate-elegant-fade-in-up animate-stagger-10 hover-elegant-glow">
+          <div className="animate-fade-in-up animate-stagger-8">
             <ContactSection />
           </div>
         </ErrorBoundary>
 
-        {/* Footer with final fade */}
         <ErrorBoundary componentName="Footer">
-          <div className="animate-elegant-fade-in-up animate-stagger-10">
+          <div className="animate-fade-in-up animate-stagger-10">
             <Footer />
           </div>
         </ErrorBoundary>
       </div>
 
-      {/* Website Popup - Global popup system with elegant entrance */}
+      {/* Website Popup - Global popup system */}
       <ErrorBoundary componentName="WebsitePopup">
-        <div className="animate-elegant-scale-in">
-          <WebsitePopup />
-        </div>
+        <WebsitePopup />
       </ErrorBoundary>
     </div>
   );
