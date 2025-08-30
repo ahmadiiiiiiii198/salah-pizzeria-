@@ -46,9 +46,10 @@ const WeOffer = () => {
     const setupContentAndRealtime = async () => {
       try {
         console.log('🔄 [WeOffer] Starting content load...');
-        // Initialize We Offer content in database if it doesn't exist
-        const { initializeWeOfferContent } = await import('@/utils/initializeWeOfferContent');
-        const loadedContent = await initializeWeOfferContent();
+        // Load We Offer content from database (initialization disabled to preserve admin settings)
+        const { settingsService } = await import('@/services/settingsService');
+        await settingsService.initialize();
+        const loadedContent = await settingsService.getSetting('weOfferContent', null);
 
         if (loadedContent && loadedContent.offers && Array.isArray(loadedContent.offers)) {
           setOfferContent(loadedContent);

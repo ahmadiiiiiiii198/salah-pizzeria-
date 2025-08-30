@@ -146,21 +146,12 @@ const ProductsAdmin = () => {
       }
 
       if (!data || data.length === 0) {
-        console.log('[ProductsAdmin] No categories found, attempting to initialize...');
-        const initSuccess = await initializeCategories();
-        if (initSuccess) {
-          // Retry fetching after initialization
-          const { data: retryData, error: retryError } = await supabase
-            .from('categories')
-            .select('*')
-            .eq('is_active', true)
-            .order('name', { ascending: true });
+        console.log('[ProductsAdmin] No active categories found');
+        console.log('[ProductsAdmin] ⚠️  Category initialization DISABLED to preserve admin settings');
+        console.log('[ProductsAdmin] ⚠️  This prevents overwriting extras_enabled and other category settings');
 
-          if (retryError) throw retryError;
-          return retryData as DatabaseCategory[];
-        } else {
-          throw new Error('Failed to initialize categories');
-        }
+        // Return empty array - no automatic initialization
+        return [];
       }
 
       console.log('[ProductsAdmin] Categories loaded:', data);

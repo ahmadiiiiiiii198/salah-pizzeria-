@@ -11,6 +11,7 @@ export interface Category {
   icon?: React.ReactNode;
   is_active?: boolean;
   sort_order?: number;
+  extras_enabled?: boolean; // Controls whether this category can have extras
   labels?: string[]; // Labels/tags for categorization
   created_at?: string;
   updated_at?: string;

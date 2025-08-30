@@ -53,14 +53,9 @@ export async function initializeDatabase(): Promise<boolean> {
     console.log('[InitDB] Step 0b: Ensuring content_sections table...');
     await ensureContentSectionsTable();
 
-    // Step 1: Initialize categories first
-    console.log('[InitDB] Step 1: Initializing categories...');
-    const categoriesSuccess = await initializeCategories();
-    if (!categoriesSuccess) {
-      console.error('[InitDB] Failed to initialize categories');
-      return false;
-    }
-    console.log('[InitDB] Categories initialized successfully');
+    // Step 1: Category initialization DISABLED to preserve admin settings
+    console.log('[InitDB] Step 1: Category initialization DISABLED to preserve extras_enabled settings');
+    console.log('[InitDB] Categories initialization skipped successfully');
 
     // Step 2: Skip product initialization to prevent recreation after deletion
     console.log('[InitDB] Step 2: Skipping product initialization to prevent recreation after deletion');
@@ -69,9 +64,9 @@ export async function initializeDatabase(): Promise<boolean> {
     // Step 3: Skip content sections initialization (not needed for pizzeria)
     console.log('[InitDB] Step 3: Content sections initialization skipped successfully');
 
-    // Step 4: Initialize default settings
-    console.log('[InitDB] Step 4: Initializing default settings...');
-    await initializeDefaultSettings();
+    // Step 4: Settings initialization DISABLED to prevent any data interference
+    console.log('[InitDB] Step 4: Settings initialization DISABLED to preserve admin settings');
+    console.log('[InitDB] Settings initialization skipped successfully');
 
     return true;
   } catch (error) {

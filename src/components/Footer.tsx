@@ -1,38 +1,63 @@
 
 import React, { useState, useEffect } from 'react';
 import { Pizza, ChefHat, Clock, MapPin, Phone, Mail } from 'lucide-react';
-import { useBusinessHoursContext } from '@/contexts/BusinessHoursContext';
 import { useLanguage } from '@/hooks/use-language';
-import { usePizzeriaHours } from '@/hooks/usePizzeriaHours';
 import { supabase } from '@/integrations/supabase/client';
 
 const Footer = () => {
-  const { formattedHours } = useBusinessHoursContext();
-  const { allHours } = usePizzeriaHours();
   const { t } = useLanguage();
   const [contactHours, setContactHours] = useState<string>('');
+  const [contactInfo, setContactInfo] = useState({
+    address: 'C.so Giulio Cesare, 36, 10152 Torino TO',
+    phone: '+393479190907',
+    email: ''
+  });
+  const [restaurantInfo, setRestaurantInfo] = useState({
+    name: 'EFES KEBAP',
+    description: 'Autentico kebap turco e pizza italiana nel cuore di Torino. Tradizione, qualità e passione in ogni piatto.'
+  });
 
-  // Load contact hours from database
+  // Load contact information from database
   useEffect(() => {
-    const loadContactHours = async () => {
+    const loadContactData = async () => {
       try {
-        const { data, error } = await supabase
+        // Load contact content
+        const { data: contactData, error: contactError } = await supabase
           .from('settings')
           .select('value')
           .eq('key', 'contactContent')
           .single();
 
-        if (data?.value?.hours) {
-          setContactHours(data.value.hours);
+        if (contactData?.value) {
+          setContactHours(contactData.value.hours || '');
+          setContactInfo({
+            address: contactData.value.address || 'C.so Giulio Cesare, 36, 10152 Torino TO',
+            phone: contactData.value.phone || '+393479190907',
+            email: contactData.value.email || ''
+          });
+        }
+
+        // Load restaurant info
+        const { data: restaurantData, error: restaurantError } = await supabase
+          .from('settings')
+          .select('value')
+          .eq('key', 'restaurantInfo')
+          .single();
+
+        if (restaurantData?.value) {
+          setRestaurantInfo({
+            name: restaurantData.value.name || 'EFES KEBAP',
+            description: restaurantData.value.description || 'Autentico kebap turco e pizza italiana nel cuore di Torino. Tradizione, qualità e passione in ogni piatto.'
+          });
         }
       } catch (error) {
-        console.error('Failed to load contact hours:', error);
+        console.error('Failed to load contact data:', error);
       }
     };
 
-    loadContactHours();
+    loadContactData();
 
-    // Set up real-time listener for contact content changes
+    // Set up real-time listener for contact and restaurant info changes
     const timestamp = Date.now();
     const channelName = `footer-contact-updates-${timestamp}`;
     const channel = supabase
@@ -44,9 +69,31 @@ const Footer = () => {
         filter: 'key=eq.contactContent'
       }, async (payload) => {
         console.log('🔔 [Footer] Real-time contact content update received from admin');
-        if (payload.new?.value?.hours) {
-          setContactHours(payload.new.value.hours);
-          console.log('✅ [Footer] Contact hours updated from real-time change');
+        if (payload.new?.value) {
+          const newValue = payload.new.value;
+          setContactHours(newValue.hours || '');
+          setContactInfo(prev => ({
+            address: newValue.address || prev.address,
+            phone: newValue.phone || prev.phone,
+            email: newValue.email || prev.email
+          }));
+          console.log('✅ [Footer] Contact info updated from real-time change');
+        }
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'settings',
+        filter: 'key=eq.restaurantInfo'
+      }, async (payload) => {
+        console.log('🔔 [Footer] Real-time restaurant info update received from admin');
+        if (payload.new?.value) {
+          const newValue = payload.new.value;
+          setRestaurantInfo({
+            name: newValue.name || restaurantInfo.name,
+            description: newValue.description || restaurantInfo.description
+          });
+          console.log('✅ [Footer] Restaurant info updated from real-time change');
         }
       })
       .subscribe();
@@ -81,27 +128,28 @@ const Footer = () => {
                 <Pizza className="h-8 w-8 text-white" />
               </div>
               <div>
-                <h3 className="font-fredoka font-bold text-xl text-efes-cream">EFES KEBAP</h3>
+                <h3 className="font-fredoka font-bold text-xl text-efes-cream">{restaurantInfo.name}</h3>
                 <p className="font-pacifico text-efes-gold">Ristorante - Pizzeria</p>
               </div>
             </div>
             <p className="text-gray-300 mb-6 max-w-md font-roboto">
-              Autentico kebap turco e pizza italiana nel cuore di Torino.
-              Tradizione, qualità e passione in ogni piatto.
+              {restaurantInfo.description}
             </p>
             <div className="space-y-2 text-sm text-gray-400">
               <div className="flex items-center space-x-2">
                 <MapPin size={16} className="text-pizza-orange" />
-                <p>C.so Giulio Cesare, 36, 10152 Torino TO</p>
+                <p>{contactInfo.address}</p>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone size={16} className="text-pizza-orange" />
-                <p>Tel: +393479190907</p>
+                <p>Tel: {contactInfo.phone}</p>
               </div>
-              <div className="flex items-center space-x-2">
-                <Mail size={16} className="text-pizza-orange" />
-                <p>Email: anilamyzyri@gmail.com</p>
-              </div>
+              {contactInfo.email && (
+                <div className="flex items-center space-x-2">
+                  <Mail size={16} className="text-pizza-orange" />
+                  <p>Email: {contactInfo.email}</p>
+                </div>
+              )}
             </div>
           </div>
           
@@ -129,13 +177,13 @@ const Footer = () => {
           <div>
             <h3 className="font-semibold mb-4">{t('openingHours')}</h3>
             <div className="text-gray-300 text-sm leading-relaxed whitespace-pre-line">
-              {allHours || contactHours || formattedHours || t('defaultHours')}
+              {contactHours || 'Lun-Dom: 11:00-03:00'}
             </div>
           </div>
         </div>
         
         <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; 2024 Pizzeria Senza Cipolla Torino. Tutti i diritti riservati.</p>
+          <p>&copy; 2024 Efes Pizza Kebap Torino. Tutti i diritti riservati.</p>
         </div>
       </div>
     </footer>

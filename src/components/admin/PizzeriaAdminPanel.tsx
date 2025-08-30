@@ -18,10 +18,12 @@ import {
   Menu as MenuIcon,
   Wrench,
   Database,
-  Plus,
+  CheckCircle,
   Eye,
+  Plus,
   Clock,
   CreditCard,
+  Phone,
   Loader2,
   Package,
   Volume2
@@ -32,6 +34,7 @@ import UnifiedNotificationSystem from '../UnifiedNotificationSystem';
 
 // Lazy load admin components to prevent initialization errors
 const ProductsAdmin = lazy(() => import('./ProductsAdmin').catch(() => ({ default: () => <div>Error loading ProductsAdmin</div> })));
+const CustomerMenuAdmin = lazy(() => import('./CustomerMenuAdmin').catch(() => ({ default: () => <div>Error loading CustomerMenuAdmin</div> })));
 // OrdersAdmin removed - only available in separate ordini section
 const ContentEditor = lazy(() => import('./ContentEditor').catch(() => ({ default: () => <div>Error loading ContentEditor</div> })));
 const HeroContentEditor = lazy(() => import('./HeroContentEditor').catch(() => ({ default: () => <div>Error loading HeroContentEditor</div> })));
@@ -54,11 +57,15 @@ const DatabaseTest = lazy(() => import('./DatabaseTest').catch(() => ({ default:
 const SystemConnectionTest = lazy(() => import('../SystemConnectionTest').catch(() => ({ default: () => <div>Error loading SystemConnectionTest</div> })));
 const YouTubeConnectionTest = lazy(() => import('../YouTubeConnectionTest').catch(() => ({ default: () => <div>Error loading YouTubeConnectionTest</div> })));
 const BusinessHoursManager = lazy(() => import('./BusinessHoursManager').catch(() => ({ default: () => <div>Error loading BusinessHoursManager</div> })));
+const ContactInfoManager = lazy(() => import('./ContactInfoManager').catch(() => ({ default: () => <div>Error loading ContactInfoManager</div> })));
+const CategoryExtrasManager = lazy(() => import('./CategoryExtrasManager').catch(() => ({ default: () => <div>Error loading CategoryExtrasManager</div> })));
 const ShippingZoneManager = lazy(() => import('./ShippingZoneManager').catch(() => ({ default: () => <div>Error loading ShippingZoneManager</div> })));
 const IOSAudioTest = lazy(() => import('../IOSAudioTest').catch(() => ({ default: () => <div>Error loading IOSAudioTest</div> })));
 const StripeSettings = lazy(() => import('./StripeSettings').catch(() => ({ default: () => <div>Error loading StripeSettings</div> })));
 const NotificationSettings = lazy(() => import('./NotificationSettings').catch(() => ({ default: () => <div>Error loading NotificationSettings</div> })));
 const DatabaseSchemaUpdater = lazy(() => import('./DatabaseSchemaUpdater').catch(() => ({ default: () => <div>Error loading DatabaseSchemaUpdater</div> })));
+const DatabaseSchemaMigrator = lazy(() => import('./DatabaseSchemaMigrator').catch(() => ({ default: () => <div>Error loading DatabaseSchemaMigrator</div> })));
+const DatabaseSchemaTest = lazy(() => import('./DatabaseSchemaTest').catch(() => ({ default: () => <div>Error loading DatabaseSchemaTest</div> })));
 const ProductsDebugger = lazy(() => import('../ProductsDebugger').catch(() => ({ default: () => <div>Error loading ProductsDebugger</div> })));
 const MenuProductsConnectionTest = lazy(() => import('../MenuProductsConnectionTest').catch(() => ({ default: () => <div>Error loading MenuProductsConnectionTest</div> })));
 const ProductsSchemaFixer = lazy(() => import('../ProductsSchemaFixer').catch(() => ({ default: () => <div>Error loading ProductsSchemaFixer</div> })));
@@ -133,6 +140,14 @@ const PizzeriaAdminPanel = () => {
     },
 
     {
+      id: 'customer-menu',
+      label: 'Menu Cliente',
+      icon: Pizza,
+      description: 'Gestione menu visibile ai clienti su /menu',
+      category: 'core'
+    },
+
+    {
       id: 'stock',
       label: 'Gestione Stock',
       icon: Package,
@@ -201,6 +216,21 @@ const PizzeriaAdminPanel = () => {
       description: 'Configurazioni generali del sito',
       category: 'system'
     },
+    {
+      id: 'contact-info',
+      label: 'Info Contatto',
+      icon: Phone,
+      description: 'Gestione informazioni di contatto e footer',
+      category: 'system'
+    },
+    {
+      id: 'category-extras',
+      label: 'Extra Categorie',
+      icon: Settings,
+      description: 'Gestione extra per categorie prodotti',
+      category: 'system'
+    },
+
 
     // === TESTING & DEBUGGING ===
     {
@@ -267,7 +297,22 @@ const PizzeriaAdminPanel = () => {
       icon: Wrench,
       description: 'Risolvi problemi schema database',
       category: 'advanced'
-    }
+    },
+    {
+      id: 'schema-migrator',
+      label: 'Schema Migrator',
+      icon: Database,
+      description: 'Migra schema database per content_sections',
+      category: 'advanced'
+    },
+    {
+      id: 'schema-test',
+      label: 'Schema Test',
+      icon: CheckCircle,
+      description: 'Test schema database e RLS policies',
+      category: 'testing'
+    },
+
   ];
 
   return (
@@ -286,7 +331,7 @@ const PizzeriaAdminPanel = () => {
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-800 via-gray-700 to-gray-600 bg-clip-text text-transparent">
                   Pannello Admin
                 </h1>
-                <p className="text-xl text-gray-600 font-semibold">Pizzeria Regina 2000</p>
+                <p className="text-xl text-gray-600 font-semibold">Efes Pizza Kebap</p>
                 <p className="text-sm text-gray-500 flex items-center mt-1">
                   <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
                   Sistema attivo e funzionante
@@ -628,6 +673,28 @@ const PizzeriaAdminPanel = () => {
                 <CardContent className="p-6">
                   <Suspense fallback={<LoadingSpinner />}>
                     <ProductsAdmin />
+                  </Suspense>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Customer Menu Management */}
+            <TabsContent value="customer-menu">
+              <Card className="bg-white rounded-2xl shadow-xl border border-gray-200">
+                <CardHeader className="bg-gradient-to-r from-green-50 to-green-100 rounded-t-2xl border-b border-green-200">
+                  <CardTitle className="flex items-center text-green-800">
+                    <div className="bg-green-500 p-2 rounded-lg mr-3">
+                      <Pizza className="h-6 w-6 text-white" />
+                    </div>
+                    Gestione Menu Cliente
+                  </CardTitle>
+                  <CardDescription className="text-green-600">
+                    Gestisci i prodotti che appaiono nella pagina menu per i clienti (/menu)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <CustomerMenuAdmin />
                   </Suspense>
                 </CardContent>
               </Card>
@@ -1005,6 +1072,51 @@ const PizzeriaAdminPanel = () => {
               </div>
             </TabsContent>
 
+            {/* Contact Info Management */}
+            <TabsContent value="contact-info">
+              <Card className="bg-white rounded-2xl shadow-xl border border-gray-200">
+                <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-t-2xl border-b border-blue-200">
+                  <CardTitle className="flex items-center text-blue-800">
+                    <div className="bg-blue-500 p-2 rounded-lg mr-3">
+                      <Phone className="h-6 w-6 text-white" />
+                    </div>
+                    Gestione Informazioni di Contatto
+                  </CardTitle>
+                  <CardDescription className="text-blue-600">
+                    Gestisci tutte le informazioni di contatto visualizzate nel footer e nelle sezioni contatti
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <ContactInfoManager />
+                  </Suspense>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Category Extras Management */}
+            <TabsContent value="category-extras">
+              <Card className="bg-white rounded-2xl shadow-xl border border-gray-200">
+                <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-t-2xl border-b border-blue-200">
+                  <CardTitle className="flex items-center text-blue-800">
+                    <div className="bg-blue-500 p-2 rounded-lg mr-3">
+                      <Settings className="h-6 w-6 text-white" />
+                    </div>
+                    Gestione Extra per Categorie
+                  </CardTitle>
+                  <CardDescription className="text-blue-600">
+                    Controlla quali categorie possono avere extra aggiunti durante l'ordine
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <CategoryExtrasManager />
+                  </Suspense>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+
             {/* Database Test */}
             <TabsContent value="database-test">
               <Card>
@@ -1124,6 +1236,48 @@ const PizzeriaAdminPanel = () => {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            {/* Schema Migrator */}
+            <TabsContent value="schema-migrator">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Database className="mr-2" />
+                    Content Sections Schema Migrator
+                  </CardTitle>
+                  <CardDescription>
+                    Fix content_sections table schema and RLS policies for image uploads
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <DatabaseSchemaMigrator />
+                  </Suspense>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Schema Test */}
+            <TabsContent value="schema-test">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <CheckCircle className="mr-2" />
+                    Database Schema Test
+                  </CardTitle>
+                  <CardDescription>
+                    Test database schema and RLS policies for content_sections table
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <DatabaseSchemaTest />
+                  </Suspense>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+
 
             {/* Frontend Connection Tester */}
             <TabsContent value="frontend-test">

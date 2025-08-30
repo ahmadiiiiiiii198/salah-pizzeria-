@@ -24,7 +24,7 @@ interface ChiSiamoImageContent {
 const ChiSiamoImageManager = () => {
   const [content, setContent] = useState<ChiSiamoImageContent>({
     image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-    alt: "Pizzeria Senza Cipolla - La nostra storia"
+    alt: "Efes Pizza Kebap - La nostra storia"
   });
   
   const [isLoading, setIsLoading] = useState(true);

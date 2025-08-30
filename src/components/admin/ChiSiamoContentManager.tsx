@@ -57,10 +57,10 @@ interface ChiSiamoContent {
 
 const DEFAULT_CONTENT: ChiSiamoContent = {
   it: {
-    title: '👨‍🍳 Chi Siamo - Pizzeria Senza Cipolla',
-    storyTitle: '🍕 La Nostra Storia',
-    paragraph1: 'Pizzeria Senza Cipolla nasce dalla passione per l\'autentica tradizione italiana e dall\'esperienza culinaria tramandata nel tempo. Da 14 anni, offriamo pizza italiana preparata con amore, ingredienti freschi e il nostro forno a legna tradizionale.',
-    paragraph2: 'Le nostre pizze nascono da una profonda passione per la tradizione culinaria italiana. Solo ingredienti selezionati, solo autenticità made in Torino. 🍕 Situati nel cuore di Torino, offriamo esperienza artigianale e passione per la vera pizza italiana.',
+    title: '👨‍🍳 Chi Siamo - Efes Pizza Kebap',
+    storyTitle: '🥙 La Nostra Storia',
+    paragraph1: 'Efes Pizza Kebap nasce dalla passione per l\'autentica tradizione turca e italiana e dall\'esperienza culinaria tramandata nel tempo. Offriamo kebap turco e pizza italiana preparati con amore, ingredienti freschi e tecniche tradizionali.',
+    paragraph2: 'I nostri piatti nascono da una profonda passione per la tradizione culinaria turca e italiana. Solo ingredienti selezionati, solo autenticità made in Torino. 🥙 Situati nel cuore di Torino, offriamo esperienza artigianale e passione per il vero kebap e pizza.',
     quote: '🏪 Nella nostra pizzeria puoi trovare:',
     quoteAuthor: 'Un viaggio tra sapori, tradizione e autenticità',
     servicesTitle: 'Nella nostra pizzeria puoi trovare:',
@@ -79,10 +79,10 @@ const DEFAULT_CONTENT: ChiSiamoContent = {
     tagline: 'Creiamo sapori autentici, una pizza alla volta'
   },
   en: {
-    title: '👨‍🍳 About Us - Pizzeria Senza Cipolla',
-    storyTitle: '🍕 Our Story',
-    paragraph1: 'Pizzeria Senza Cipolla was born from a passion for authentic Italian tradition and culinary experience passed down through time. For 14 years, we offer Italian pizza prepared with love, fresh ingredients and our traditional wood-fired oven.',
-    paragraph2: 'Our pizzas are born from a deep passion for Italian culinary tradition. Only selected ingredients, only authenticity made in Turin. 🍕 Located in the heart of Turin, we offer artisanal experience and passion for authentic Italian pizza.',
+    title: '👨‍🍳 About Us - Efes Pizza Kebap',
+    storyTitle: '🥙 Our Story',
+    paragraph1: 'Efes Pizza Kebap was born from a passion for authentic Turkish and Italian tradition and culinary experience passed down through time. We offer Turkish kebap and Italian pizza prepared with love, fresh ingredients and traditional techniques.',
+    paragraph2: 'Our dishes are born from a deep passion for Turkish and Italian culinary tradition. Only selected ingredients, only authenticity made in Turin. 🥙 Located in the heart of Turin, we offer artisanal experience and passion for authentic kebap and pizza.',
     quote: '🏪 In our pizzeria you can find:',
     quoteAuthor: 'A journey through flavors, tradition and authenticity',
     servicesTitle: 'In our pizzeria you can find:',

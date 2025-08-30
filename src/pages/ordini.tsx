@@ -19,7 +19,7 @@ const Ordini = () => {
   };
 
   return (
-    <AuthenticatedAdminWrapper title="Gestione Ordini - Pizzeria Regina 2000" showLogout={false}>
+    <AuthenticatedAdminWrapper title="Gestione Ordini - Efes Pizza Kebap" showLogout={false}>
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50">
       {/* Mobile-Optimized Header */}
       <div className="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-40">
@@ -32,7 +32,7 @@ const Ordini = () => {
               </div>
               <div>
                 <h1 className="text-lg font-bold text-gray-800">Gestione Ordini</h1>
-                <p className="text-xs text-gray-500">Pizzeria Regina 2000</p>
+                <p className="text-xs text-gray-500">Efes Pizza Kebap</p>
               </div>
             </div>
             <div className="flex items-center space-x-1">
@@ -77,7 +77,7 @@ const Ordini = () => {
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                   Gestione Ordini
                 </h1>
-                <p className="text-lg text-gray-600 font-medium">Pizzeria Regina 2000</p>
+                <p className="text-lg text-gray-600 font-medium">Efes Pizza Kebap</p>
                 <p className="text-sm text-gray-500">Visualizza e gestisci tutti gli ordini ricevuti</p>
               </div>
             </div>

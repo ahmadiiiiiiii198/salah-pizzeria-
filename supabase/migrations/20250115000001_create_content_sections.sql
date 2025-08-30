@@ -8,13 +8,18 @@ CREATE TABLE IF NOT EXISTS content_sections (
   metadata JSONB,
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  title TEXT,
+  content TEXT,
+  image_url TEXT,
+  sort_order INTEGER DEFAULT 0
 );
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_content_sections_section_key ON content_sections(section_key);
 CREATE INDEX IF NOT EXISTS idx_content_sections_active ON content_sections(is_active);
 CREATE INDEX IF NOT EXISTS idx_content_sections_metadata ON content_sections USING GIN(metadata);
+CREATE INDEX IF NOT EXISTS idx_content_sections_sort_order ON content_sections(sort_order);
 
 -- Enable RLS
 ALTER TABLE content_sections ENABLE ROW LEVEL SECURITY;

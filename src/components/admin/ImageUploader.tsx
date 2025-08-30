@@ -167,8 +167,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
       const isAudio = acceptedFileTypes.includes('audio');
       toast({
-        title: isAudio ? "Audio uploaded" : "Image uploaded",
-        description: isAudio ? "The audio file has been uploaded successfully" : "The image has been uploaded successfully",
+        title: isAudio ? "Audio uploaded! 🎉" : "Image uploaded! 🎉",
+        description: isAudio ? "Audio file uploaded and saved to database" : "Image uploaded and saved to database",
+        duration: 3000,
       });
     } catch (error: any) {
       console.error("Error uploading files:", error);

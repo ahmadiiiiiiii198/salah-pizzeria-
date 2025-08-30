@@ -95,6 +95,10 @@ export type Database = {
           section_key: string
           section_name: string
           updated_at: string
+          title: string | null
+          content: string | null
+          image_url: string | null
+          sort_order: number | null
         }
         Insert: {
           content_type: string
@@ -106,6 +110,10 @@ export type Database = {
           section_key: string
           section_name: string
           updated_at?: string
+          title?: string | null
+          content?: string | null
+          image_url?: string | null
+          sort_order?: number | null
         }
         Update: {
           content_type?: string
@@ -117,6 +125,10 @@ export type Database = {
           section_key?: string
           section_name?: string
           updated_at?: string
+          title?: string | null
+          content?: string | null
+          image_url?: string | null
+          sort_order?: number | null
         }
         Relationships: []
       }

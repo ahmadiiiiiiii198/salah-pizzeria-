@@ -77,9 +77,10 @@ const WeOfferManager = () => {
     try {
       setLoading(true);
 
-      // Initialize We Offer content in database if it doesn't exist
-      const { initializeWeOfferContent } = await import('@/utils/initializeWeOfferContent');
-      const loadedContent = await initializeWeOfferContent();
+      // Load We Offer content from database (initialization disabled to preserve admin settings)
+      const { settingsService } = await import('@/services/settingsService');
+      await settingsService.initialize();
+      const loadedContent = await settingsService.getSetting('weOfferContent', null);
 
       // Ensure loaded content has proper structure
       if (loadedContent && loadedContent.offers && Array.isArray(loadedContent.offers)) {

@@ -1,5 +1,5 @@
 {
-  "name": "pizzeria-regina-2000-torino",
+  "name": "efes-pizza-kebap-torino",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -11,7 +11,11 @@
     "preview": "vite preview",
     "test": "echo 'Running basic tests...' && node -e 'console.log(\"✅ Basic tests passed\")'",
     "clean": "rm -rf dist node_modules/.vite",
-    "prebuild": "npm run clean"
+    "prebuild": "npm run clean",
+    "check-db": "node scripts/check-database.js",
+    "db-status": "node scripts/check-database.js",
+    "find-creds": "node scripts/find-credentials.js",
+    "find-user": "node scripts/find-credentials.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
@@ -86,7 +90,7 @@
     "rimraf": "^5.0.5",
     "inflight": "^1.0.6"
   },
-  "description": "**Pizzeria Regina 2000 Torino - Authentic Italian Pizza & Restaurant Ecommerce Website**",
+  "description": "**Efes Pizza Kebap Torino - Authentic Italian Pizza & Turkish Kebap Restaurant Ecommerce Website**",
   "main": "console-test-script.js",
   "repository": {
     "type": "git",
@@ -101,7 +105,7 @@
     "supabase",
     "stripe"
   ],
-  "author": "Pizzeria Regina 2000 Torino",
+  "author": "Efes Pizza Kebap Torino",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/ahmadiiiiiiii198/pizzeria-regina-2000-torino/issues"

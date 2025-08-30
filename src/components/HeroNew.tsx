@@ -104,12 +104,17 @@ const HeroNew = () => {
 
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-                <button className="bg-gradient-to-r from-efes-gold to-efes-dark-gold text-white px-10 py-4 rounded-lg font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 border border-efes-light-gold/30">
+              <div className="flex justify-center items-center">
+                <button
+                  onClick={() => {
+                    const productsSection = document.getElementById('products');
+                    if (productsSection) {
+                      productsSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className="bg-gradient-to-r from-efes-gold to-efes-dark-gold text-white px-10 py-4 rounded-lg font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 border border-efes-light-gold/30"
+                >
                   Ordina Ora
-                </button>
-                <button className="border-2 border-efes-gold text-efes-gold px-10 py-4 rounded-lg font-bold text-lg hover:bg-efes-gold hover:text-efes-dark-navy transition-all duration-300">
-                  Scopri il Menu
                 </button>
               </div>
             </div>

@@ -171,15 +171,7 @@ const FlegreaPizzaSection = () => {
               </p>
             </div>
 
-            {/* CTA Button */}
-            <div className="pt-4">
-              <button
-                className="bg-amber-800 hover:bg-amber-900 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-                style={{ backgroundColor: metadata.button_color || '#8B4513' }}
-              >
-                {metadata.button_text || 'SCOPRI DI PIÙ'}
-              </button>
-            </div>
+
           </div>
         </div>
       </div>

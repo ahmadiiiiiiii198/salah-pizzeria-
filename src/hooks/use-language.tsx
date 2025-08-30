@@ -126,10 +126,10 @@ const translations: Record<Language, Record<string, string>> = {
     "cancelled": "Annullato",
 
     // Hero section
-    "pizzeriaName": "Pizzeria Regina 2000",
+    "pizzeriaName": "Efes Pizza Kebap",
     "pizzeriaLocation": "Torino",
-    "heroSubtitle": "Autentica Pizza Italiana",
-    "heroDescription": "Autentica pizza italiana nel cuore di Torino dal 2000",
+    "heroSubtitle": "Autentica Pizza Italiana e Kebap Turco",
+    "heroDescription": "Autentica pizza italiana e kebap turco nel cuore di Torino",
     "goToGallery": "Vai alla Galleria",
 
     // Footer services
@@ -276,10 +276,10 @@ const translations: Record<Language, Record<string, string>> = {
     "cancelled": "Cancelled",
 
     // Hero section
-    "pizzeriaName": "Pizzeria Regina 2000",
+    "pizzeriaName": "Efes Pizza Kebap",
     "pizzeriaLocation": "Turin",
-    "heroSubtitle": "Authentic Italian Pizza",
-    "heroDescription": "Authentic Italian pizza in the heart of Turin since 2000",
+    "heroSubtitle": "Authentic Italian Pizza & Turkish Kebap",
+    "heroDescription": "Authentic Italian pizza and Turkish kebap in the heart of Turin",
     "goToGallery": "Go to Gallery",
 
     // Footer services

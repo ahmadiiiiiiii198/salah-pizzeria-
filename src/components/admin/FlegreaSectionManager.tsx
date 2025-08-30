@@ -146,10 +146,20 @@ const FlegreaSectionManager = () => {
     try {
       await updateSection(sectionId, { image_url: imageUrl });
       console.log('✅ updateSection completed successfully');
+
+      // Force immediate UI refresh
+      setRefreshKey(prev => prev + 1);
+
+      // Also force reload of content sections after a short delay
+      setTimeout(() => {
+        console.log('🔄 Force reloading content sections...');
+        loadContentSections();
+      }, 500);
+
     } catch (error) {
       console.error('❌ Error in updateSection:', error);
     }
-  }, [updateSection]);
+  }, [updateSection, loadContentSections]);
 
   // Direct callback for image uploads
   const handleImageUpload = useCallback((sectionId: string, imageUrl: string) => {
@@ -416,21 +426,29 @@ const FlegreaSectionManager = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="relative">
-                <img
-                  key={`img-${section.id}-${section.image_url}-${refreshKey}`}
-                  src={section.image_url}
-                  alt={section.metadata?.alt_text || section.section_name}
-                  className="w-full h-32 object-cover rounded-lg"
-                  onLoad={() => console.log('✅ Image loaded:', section.image_url)}
-                  onError={(e) => {
-                    console.error('❌ Failed to load image:', section.image_url);
-                    const target = e.target as HTMLImageElement;
-                    target.style.backgroundColor = '#f3f4f6';
-                    target.style.display = 'flex';
-                    target.style.alignItems = 'center';
-                    target.style.justifyContent = 'center';
-                  }}
-                />
+                {section.image_url ? (
+                  <img
+                    key={`img-${section.id}-${section.image_url}-${refreshKey}-${Date.now()}`}
+                    src={section.image_url}
+                    alt={section.metadata?.alt_text || section.section_name}
+                    className="w-full h-32 object-cover rounded-lg"
+                    onLoad={() => {
+                      console.log('✅ Image loaded successfully:', section.image_url);
+                    }}
+                    onError={(e) => {
+                      console.error('❌ Failed to load image:', section.image_url);
+                      const target = e.target as HTMLImageElement;
+                      target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDIwMCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTI4IiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iNjQiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzZCNzI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+Tm8gSW1hZ2U8L3RleHQ+Cjwvc3ZnPg==';
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <div className="text-center text-gray-500">
+                      <Image className="w-8 h-8 mx-auto mb-2" />
+                      <p className="text-sm">No image uploaded</p>
+                    </div>
+                  </div>
+                )}
                 <Button
                   variant="outline"
                   size="sm"

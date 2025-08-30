@@ -9,7 +9,8 @@ const defaultCategories: Omit<Category, 'id' | 'created_at' | 'updated_at'>[] = 
     description: "Fiori freschi e piante di qualità premium",
     image_url: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
     is_active: true,
-    sort_order: 1
+    sort_order: 1,
+    extras_enabled: true
   },
   {
     name: "Fiori Finti",
@@ -17,7 +18,8 @@ const defaultCategories: Omit<Category, 'id' | 'created_at' | 'updated_at'>[] = 
     description: "Eleganti composizioni artificiali",
     image_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
     is_active: true,
-    sort_order: 2
+    sort_order: 2,
+    extras_enabled: true
   },
   {
     name: "Matrimoni",
@@ -25,7 +27,8 @@ const defaultCategories: Omit<Category, 'id' | 'created_at' | 'updated_at'>[] = 
     description: "Allestimenti floreali per il giorno speciale",
     image_url: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
     is_active: true,
-    sort_order: 3
+    sort_order: 3,
+    extras_enabled: true
   },
   {
     name: "Funerali",
@@ -33,7 +36,8 @@ const defaultCategories: Omit<Category, 'id' | 'created_at' | 'updated_at'>[] = 
     description: "Composizioni di cordoglio e commemorazione",
     image_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
     is_active: true,
-    sort_order: 4
+    sort_order: 4,
+    extras_enabled: true
   }
 ];
 
@@ -41,22 +45,25 @@ export async function initializeCategories(): Promise<boolean> {
   try {
     console.log('[InitCategories] Checking if categories need to be initialized...');
 
-    // Check if categories already exist
+    // Check if categories already exist - be VERY conservative to avoid false negatives
     const { data: existingCategories, error: fetchError } = await supabase
       .from('categories')
-      .select('id')
-      .limit(1);
+      .select('id, name, extras_enabled')
+      .limit(10);
 
     if (fetchError) {
       console.error('[InitCategories] Error checking existing categories:', fetchError);
       console.error('[InitCategories] Error details:', fetchError.message, fetchError.details);
-      console.log('[InitCategories] This might mean the categories table does not exist');
+      console.log('[InitCategories] ⚠️  CRITICAL: Database error detected, but NOT recreating categories to preserve data');
+      console.log('[InitCategories] ⚠️  Manual intervention may be required if categories table truly does not exist');
       return false;
     }
 
     if (existingCategories && existingCategories.length > 0) {
       console.log('[InitCategories] Categories already exist, skipping initialization');
-      console.log('[InitCategories] Found', existingCategories.length, 'existing categories');
+      console.log('[InitCategories] Found', existingCategories.length, 'existing categories:', existingCategories.map(c => c.name));
+      console.log('[InitCategories] ⚠️  IMPORTANT: Skipping category recreation to preserve extras_enabled settings');
+      console.log('[InitCategories] ⚠️  Current extras_enabled values:', existingCategories.map(c => ({ name: c.name, extras_enabled: c.extras_enabled })));
       return true;
     }
 

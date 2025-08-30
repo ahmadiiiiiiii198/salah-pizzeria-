@@ -8,12 +8,16 @@ import OrderOptionsModal from './OrderOptionsModal';
 
 import { Product, ProductsByCategory } from '@/types/category';
 import { useStockManagement } from '@/hooks/useStockManagement';
+import { useBusinessHoursContext } from '@/contexts/BusinessHoursContext';
 
 const Products = () => {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState("");
   const { isProductAvailable } = useStockManagement();
   const [isSearchActive, setIsSearchActive] = useState(false);
+
+  // Get business hours for all product cards
+  const { isOpen: businessIsOpen, message: businessMessage, validateOrderTime } = useBusinessHoursContext();
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [productsContent, setProductsContent] = useState({
     heading: "I Nostri Piatti",
@@ -63,7 +67,8 @@ const Products = () => {
           *,
           categories (
             name,
-            slug
+            slug,
+            extras_enabled
           )
         `)
         .eq('is_active', true)
@@ -292,12 +297,13 @@ const Products = () => {
   }
 
   // Show all categories that have products, with preferred order for pizza categories
-  // Exclude 'extra' category as it should only appear in pizza customization modal
+  // Exclude 'extra', 'extras', and 'bevande' categories as they should only appear in product customization
   const categoryOrder = ['semplici', 'speciali'];
+  const excludedCategories = ['extra', 'extras', 'bevande', 'vini']; // Categories that should not appear in main menu
   const allCategoriesWithProducts = Object.keys(filteredProducts).filter(slug =>
     filteredProducts[slug] &&
     filteredProducts[slug].length > 0 &&
-    slug !== 'extra' // Exclude extras from main menu display
+    !excludedCategories.includes(slug) // Exclude extras and beverages from main menu display
   );
 
   // Sort categories: preferred order first, then any others alphabetically
@@ -485,6 +491,9 @@ const Products = () => {
                           >
                             <ProductCard
                               product={product}
+                              businessIsOpen={businessIsOpen}
+                              businessMessage={businessMessage}
+                              validateOrderTime={validateOrderTime}
                             />
                           </div>
                         ))}

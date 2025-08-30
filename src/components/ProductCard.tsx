@@ -6,7 +6,7 @@ import { Product } from '@/types/category';
 import { useToast } from '@/hooks/use-toast';
 import { useSimpleCart, PizzaExtra } from '@/hooks/use-simple-cart';
 import { Badge } from '@/components/ui/badge';
-import PizzaCustomizationModal from './PizzaCustomizationModal';
+import ProductCustomizationModal from './ProductCustomizationModal';
 import { formatPrice } from '@/utils/priceUtils';
 import { useStockManagement } from '@/hooks/useStockManagement';
 
@@ -64,7 +64,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
     e?.preventDefault();
     e?.stopPropagation();
 
-    console.log('🛒 Add to cart button clicked', { product, isAvailable, isPizza, businessIsOpen });
+    console.log('🛒 [ProductCard] Add to cart button clicked');
+    console.log('   Product:', product?.name);
+    console.log('   Category ID:', product?.category_id);
+    console.log('   Category Slug:', product?.category_slug);
+    console.log('   Is Available:', isAvailable);
+    console.log('   Is Pizza:', isPizza);
+    console.log('   Business Open:', businessIsOpen);
 
     // Check business hours first
     if (!businessIsOpen) {
@@ -100,31 +106,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
     }
 
     if (product && isAvailable) {
-      // For pizzas, open customization modal
-      if (isPizza) {
-        setIsCustomizationOpen(true);
-        return;
-      }
-
-      // For non-pizza items (like extras), add directly to cart
-      try {
-        const result = await addItem(product, 1);
-        if (result !== null) {
-          toast({
-            title: 'Prodotto aggiunto al carrello! 🛒',
-            description: `${product.name} è stato aggiunto al tuo carrello.`,
-          });
-          console.log('✅ Product added to cart successfully');
-        }
-        // If result is null, business hours validation failed and user was already notified
-      } catch (error) {
-        console.error('❌ Error adding product to cart:', error);
-        toast({
-          title: 'Errore',
-          description: 'Impossibile aggiungere il prodotto al carrello.',
-          variant: 'destructive'
-        });
-      }
+      // Open customization modal for all products to allow extras and beverages
+      console.log('✅ [ProductCard] Opening customization modal for product:', product.name);
+      setIsCustomizationOpen(true);
     } else {
       console.warn('⚠️ Cannot add to cart:', { product: !!product, isAvailable });
       if (!product) {
@@ -293,12 +277,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
         )}
       </div>
 
-      {/* Pizza Customization Modal */}
-      {product && isPizza && (
-        <PizzaCustomizationModal
+      {/* Product Customization Modal */}
+      {product && (
+        <ProductCustomizationModal
           isOpen={isCustomizationOpen}
           onClose={() => setIsCustomizationOpen(false)}
-          pizza={product}
+          product={product}
           onAddToCart={handlePizzaCustomization}
         />
       )}

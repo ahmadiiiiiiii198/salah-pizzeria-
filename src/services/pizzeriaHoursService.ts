@@ -193,22 +193,58 @@ class PizzeriaHoursService {
 
   /**
    * Get all formatted hours for display
-   * NOTE: This returns hardcoded display hours for frontend consistency
-   * The actual business logic uses businessHoursService for order validation
+   * Uses actual database values from pizzeriaDisplayHours
    */
   async getAllFormattedHours(): Promise<string> {
-    // Return hardcoded "11-03" format for all days as requested for display
-    const formattedDays = [
-      'lunedì: 11-03',
-      'martedì: 11-03',
-      'mercoledì: 11-03',
-      'giovedì: 11-03',
-      'venerdì: 11-03',
-      'sabato: 11-03',
-      'domenica: 11-03'
-    ];
+    try {
+      const hours = await this.getPizzeriaHours();
+      const dayNames = [
+        { key: 'monday', label: 'lunedì' },
+        { key: 'tuesday', label: 'martedì' },
+        { key: 'wednesday', label: 'mercoledì' },
+        { key: 'thursday', label: 'giovedì' },
+        { key: 'friday', label: 'venerdì' },
+        { key: 'saturday', label: 'sabato' },
+        { key: 'sunday', label: 'domenica' }
+      ];
 
-    return formattedDays.join('\n');
+      const formattedDays = dayNames.map(({ key, label }) => {
+        const dayHours = hours[key as keyof WeeklyPizzeriaHours];
+
+        if (!dayHours.isOpen) {
+          return `${label}: Chiuso`;
+        }
+
+        // Format periods (e.g., "12:00-14:30, 18:00-00:00")
+        const periodsText = dayHours.periods.map(period => {
+          // Convert 24-hour format to simplified format (remove :00, convert 00:00 to 24:00)
+          const formatTime = (time: string) => {
+            if (time === '00:00') return '24';
+            if (time.endsWith(':00')) return time.slice(0, -3);
+            return time.replace(':', '');
+          };
+
+          return `${formatTime(period.openTime)}-${formatTime(period.closeTime)}`;
+        }).join(', ');
+
+        return `${label}: ${periodsText}`;
+      });
+
+      return formattedDays.join('\n');
+    } catch (error) {
+      console.error('❌ [PizzeriaHours] Error formatting hours:', error);
+      // Fallback to default format
+      const formattedDays = [
+        'lunedì: 11-03',
+        'martedì: 11-03',
+        'mercoledì: 11-03',
+        'giovedì: 11-03',
+        'venerdì: 11-03',
+        'sabato: 11-03',
+        'domenica: 11-03'
+      ];
+      return formattedDays.join('\n');
+    }
   }
 
   /**

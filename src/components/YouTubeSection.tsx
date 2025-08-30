@@ -284,7 +284,7 @@ const YouTubeSection = () => {
             <div className="relative group">
               <img
                 src="/senza-cipolla-logo.png"
-                alt="Pizzeria Senza Cipolla Torino Logo"
+                alt="Efes Pizza Kebap Torino Logo"
                 className="h-48 md:h-64 lg:h-80 w-auto object-contain animate-logo-float-rotate hover:animate-logo-glow-pulse transition-all duration-500 filter drop-shadow-2xl group-hover:drop-shadow-3xl cursor-pointer"
                 onError={(e) => {
                   // Try alternative logo paths in order of preference

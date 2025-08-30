@@ -204,35 +204,51 @@ class CategoryService {
   async saveCategory(category: Partial<Category>): Promise<boolean> {
     try {
       console.log('[CategoryService] Saving category:', category);
+      console.log('🔍 [CategoryService] extras_enabled value:', category.extras_enabled);
+      console.log('🔍 [CategoryService] has extras_enabled field:', 'extras_enabled' in category);
 
       if (category.id && category.id !== 'new') {
-        // Update existing category
+        // Update existing category - preserve extras_enabled if not provided
+        const updateData: any = {
+          name: category.name,
+          slug: category.slug,
+          description: category.description,
+          image_url: category.image_url,
+          is_active: category.is_active,
+          sort_order: category.sort_order,
+          updated_at: new Date().toISOString()
+        };
+
+        // Only update extras_enabled if it's explicitly provided
+        if (category.extras_enabled !== undefined) {
+          updateData.extras_enabled = category.extras_enabled;
+        }
+
         const { error } = await supabase
           .from('categories')
-          .update({
-            name: category.name,
-            slug: category.slug,
-            description: category.description,
-            image_url: category.image_url,
-            is_active: category.is_active,
-            sort_order: category.sort_order,
-            updated_at: new Date().toISOString()
-          })
+          .update(updateData)
           .eq('id', category.id);
 
         if (error) throw error;
       } else {
         // Insert new category
+        const insertData: any = {
+          name: category.name!,
+          slug: category.slug!,
+          description: category.description,
+          image_url: category.image_url,
+          is_active: category.is_active ?? true,
+          sort_order: category.sort_order ?? 0
+        };
+
+        // Include extras_enabled if provided, otherwise use database default
+        if (category.extras_enabled !== undefined) {
+          insertData.extras_enabled = category.extras_enabled;
+        }
+
         const { error } = await supabase
           .from('categories')
-          .insert({
-            name: category.name!,
-            slug: category.slug!,
-            description: category.description,
-            image_url: category.image_url,
-            is_active: category.is_active ?? true,
-            sort_order: category.sort_order ?? 0
-          });
+          .insert(insertData);
 
         if (error) throw error;
       }

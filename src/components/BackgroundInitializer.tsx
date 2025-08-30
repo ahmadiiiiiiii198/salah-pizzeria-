@@ -22,30 +22,10 @@ const BackgroundInitializer: React.FC = () => {
         const now = Date.now();
         const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
 
-        if (lastInitialized && (now - parseInt(lastInitialized)) < oneHour) {
-          console.log('✅ [BackgroundInitializer] Already initialized recently, skipping database init');
-        } else {
-          console.log('🚀 [BackgroundInitializer] Performing one-time database initialization...');
-
-          try {
-            // Only initialize database once per hour
-            const { initializeDatabase } = await import('@/utils/initializeDatabase');
-            const dbPromise = initializeDatabase();
-            const dbTimeout = new Promise((_, reject) => {
-              setTimeout(() => reject(new Error('Database initialization timeout')), 15000);
-            });
-
-            const dbInitialized = await Promise.race([dbPromise, dbTimeout]);
-            if (!dbInitialized) {
-              console.warn('⚠️ [BackgroundInitializer] Database initialization returned false, but continuing...');
-            } else {
-              console.log('✅ [BackgroundInitializer] Database initialized successfully');
-              localStorage.setItem('app_initialized', now.toString());
-            }
-          } catch (dbError) {
-            console.warn('⚠️ [BackgroundInitializer] Database initialization failed, but continuing:', dbError);
-          }
-        }
+        // Database initialization DISABLED to prevent interference with admin settings
+        console.log('⚠️ [BackgroundInitializer] Database initialization DISABLED to preserve admin settings');
+        console.log('⚠️ [BackgroundInitializer] This prevents automatic recreation of categories that overwrites extras_enabled');
+        localStorage.setItem('app_initialized', now.toString());
 
         // Then initialize the settings service with timeout
         const settingsPromise = settingsService.initialize();

@@ -15,7 +15,6 @@ import {
   Loader2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { usePizzeriaHours } from '@/hooks/usePizzeriaHours';
 
 interface ContactFormData {
   name: string;
@@ -35,15 +34,40 @@ interface ContactInfo {
 
 const ContactSection = () => {
   const { toast } = useToast();
-  const { allHours } = usePizzeriaHours();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [backgroundRefreshKey, setBackgroundRefreshKey] = useState(Date.now());
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
     address: 'Corso Palermo, 34/B, 10152 Torino TO',
     phone: '+393285673396',
-    email: 'anilamyzyri@gmail.com',
+    email: '',
     hours: 'lunedì: 11-03\nmartedì: 11-03\nmercoledì: 11-03\ngiovedì: 11-03\nvenerdì: 11-03\nsabato: 11-03\ndomenica: 11-03'
   });
+
+  // Load contact information from database
+  useEffect(() => {
+    const loadContactInfo = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('settings')
+          .select('value')
+          .eq('key', 'contactContent')
+          .single();
+
+        if (data?.value) {
+          setContactInfo({
+            address: data.value.address || contactInfo.address,
+            phone: data.value.phone || contactInfo.phone,
+            email: data.value.email || '',
+            hours: data.value.hours || contactInfo.hours
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load contact info:', error);
+      }
+    };
+
+    loadContactInfo();
+  }, []);
 
   const [formData, setFormData] = useState<ContactFormData>({
     name: '',
@@ -365,17 +389,19 @@ const ContactSection = () => {
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-4">
-                  <div className="bg-efes-light-gold/10 p-3 rounded-full border border-efes-light-gold/20">
-                    <Mail className="h-6 w-6 text-efes-light-gold" />
+                {contactInfo.email && (
+                  <div className="flex items-start space-x-4">
+                    <div className="bg-efes-light-gold/10 p-3 rounded-full border border-efes-light-gold/20">
+                      <Mail className="h-6 w-6 text-efes-light-gold" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-efes-dark-navy mb-1 efes-heading">Email</h3>
+                      <a href={`mailto:${contactInfo.email}`} className="text-efes-gold hover:text-efes-dark-gold font-medium font-raleway transition-colors">
+                        {contactInfo.email}
+                      </a>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-efes-dark-navy mb-1 efes-heading">Email</h3>
-                    <a href={`mailto:${contactInfo.email}`} className="text-efes-gold hover:text-efes-dark-gold font-medium font-raleway transition-colors">
-                      {contactInfo.email}
-                    </a>
-                  </div>
-                </div>
+                )}
 
                 <div className="flex items-start space-x-4">
                   <div className="bg-efes-gold/10 p-3 rounded-full border border-efes-gold/20">
@@ -383,21 +409,8 @@ const ContactSection = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold text-efes-dark-navy mb-1 efes-heading">Orari di Apertura</h3>
-                    <div className="text-efes-charcoal space-y-1 font-raleway">
-                      {(allHours && Array.isArray(allHours) ? allHours : [
-                        { day: 'Lunedì', hours: '11:00-15:00' },
-                        { day: 'Martedì', hours: '11:00-15:00' },
-                        { day: 'Mercoledì', hours: '11:00-15:00' },
-                        { day: 'Giovedì', hours: '11:00-15:00' },
-                        { day: 'Venerdì', hours: '11:00-15:00' },
-                        { day: 'Sabato', hours: '11:00-15:00' },
-                        { day: 'Domenica', hours: '11:00-15:00' }
-                      ]).map((dayHours, index) => (
-                        <div key={index} className="flex justify-between">
-                          <span className="font-medium text-efes-dark-navy">{dayHours.day}:</span>
-                          <span className="text-efes-bronze">{dayHours.hours}</span>
-                        </div>
-                      ))}
+                    <div className="text-efes-charcoal font-raleway whitespace-pre-line">
+                      {contactInfo.hours || 'Lun-Dom: 11:00-03:00'}
                     </div>
                   </div>
                 </div>
