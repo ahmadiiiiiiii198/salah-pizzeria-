@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Orders Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .card { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .success { border-left: 5px solid #22c55e; background: #f0fdf4; }
+        .error { border-left: 5px solid #ef4444; background: #fef2f2; }
+        .info { border-left: 5px solid #3b82f6; background: #eff6ff; }
+        .warning { border-left: 5px solid #f59e0b; background: #fffbeb; }
+        button { padding: 12px 24px; margin: 8px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }
+        button:hover { background: #2563eb; }
+        button.danger { background: #ef4444; }
+        button.danger:hover { background: #dc2626; }
+        button.success { background: #22c55e; }
+        button.success:hover { background: #16a34a; }
+        #log { background: #1e293b; color: #f1f5f9; padding: 20px; border-radius: 8px; max-height: 500px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.6; }
+        .log-entry { margin: 4px 0; padding: 2px 0; }
+        .log-success { color: #22c55e; font-weight: bold; }
+        .log-error { color: #ef4444; font-weight: bold; }
+        .log-info { color: #60a5fa; }
+        .log-warning { color: #fbbf24; }
+        .status { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .status-connected { background: #22c55e; color: white; }
+        .status-disconnected { background: #ef4444; color: white; }
+        .status-connecting { background: #f59e0b; color: white; }
+        h1 { color: #1e293b; margin-bottom: 10px; }
+        h2 { color: #374151; margin-top: 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Real-time Orders Test</h1>
+        <p>This test verifies that Supabase real-time is properly enabled for the orders table.</p>
+        
+        <div class="card info">
+            <h2>📋 Test Instructions</h2>
+            <ol>
+                <li>Click "Start Real-time Test" below</li>
+                <li>Open admin panel in another browser tab</li>
+                <li>Update any order status from the admin panel</li>
+                <li>Check if real-time updates appear in the log below</li>
+                <li>If you see updates, real-time is working! 🎉</li>
+            </ol>
+        </div>
+
+        <div class="card">
+            <h2>🔄 Real-time Status</h2>
+            <p>Connection: <span id="status" class="status status-disconnected">Disconnected</span></p>
+            <div style="margin-top: 15px;">
+                <button onclick="window.startRealtimeTest()" class="success">Start Real-time Test</button>
+                <button onclick="window.stopRealtimeTest()" class="danger">Stop Test</button>
+                <button onclick="window.clearLog()">Clear Log</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📊 Current Orders</h2>
+            <div id="ordersInfo">
+                <p>Click "Check Orders" to see current orders in database</p>
+            </div>
+            <button onclick="window.checkOrders()">Check Orders</button>
+        </div>
+
+        <div class="card">
+            <h2>📝 Real-time Log</h2>
+            <div id="log">
+                <div class="log-entry log-info">[INFO] Real-time test ready. Click "Start Real-time Test" to begin.</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        let realtimeChannel = null;
+        let updateCount = 0;
+        
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${timestamp}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function updateStatus(text, type = 'disconnected') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = text;
+            statusEl.className = `status status-${type}`;
+        }
+        
+        window.startRealtimeTest = async function() {
+            try {
+                const { supabase } = await import('./src/integrations/supabase/client.js');
+                
+                addLog('🚀 Starting real-time test...', 'info');
+                updateStatus('Connecting...', 'connecting');
+                
+                // Create unique channel
+                const channelName = 'realtime-test-' + Date.now();
+                realtimeChannel = supabase
+                    .channel(channelName)
+                    .on('postgres_changes', {
+                        event: '*', // Listen to all events
+                        schema: 'public',
+                        table: 'orders'
+                    }, (payload) => {
+                        updateCount++;
+                        addLog(`🔔 REAL-TIME UPDATE #${updateCount} RECEIVED!`, 'success');
+                        addLog(`📦 Event: ${payload.eventType}`, 'info');
+                        addLog(`📦 Order: ${payload.new?.order_number || payload.old?.order_number}`, 'info');
+                        addLog(`📦 Status: ${payload.new?.status || 'N/A'}`, 'info');
+                        addLog(`📦 User ID: ${payload.new?.user_id || 'N/A'}`, 'info');
+                        addLog(`📦 Updated: ${payload.new?.updated_at || 'N/A'}`, 'info');
+                        addLog('---', 'info');
+                        
+                        // Show success message
+                        if (updateCount === 1) {
+                            addLog('✅ REAL-TIME IS WORKING! Cross-browser updates should now work.', 'success');
+                        }
+                    })
+                    .subscribe((status) => {
+                        addLog(`📡 Subscription status: ${status}`, 'info');
+                        
+                        if (status === 'SUBSCRIBED') {
+                            updateStatus('Connected', 'connected');
+                            addLog('✅ Real-time subscription active', 'success');
+                            addLog('💡 Now update an order status from admin panel', 'info');
+                        } else if (status === 'CHANNEL_ERROR') {
+                            updateStatus('Error', 'disconnected');
+                            addLog('❌ Real-time subscription failed', 'error');
+                        }
+                    });
+                
+                addLog('📡 Real-time subscription created', 'info');
+                
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, 'error');
+                updateStatus('Error', 'disconnected');
+            }
+        };
+        
+        window.stopRealtimeTest = function() {
+            if (realtimeChannel) {
+                realtimeChannel.unsubscribe();
+                realtimeChannel = null;
+                updateStatus('Disconnected', 'disconnected');
+                addLog('🛑 Real-time test stopped', 'info');
+            } else {
+                addLog('⚠️ No active test to stop', 'warning');
+            }
+        };
+        
+        window.checkOrders = async function() {
+            try {
+                const { supabase } = await import('./src/integrations/supabase/client.js');
+                
+                addLog('📋 Checking current orders...', 'info');
+                
+                const { data: orders, error } = await supabase
+                    .from('orders')
+                    .select('id, order_number, status, user_id, updated_at')
+                    .order('updated_at', { ascending: false })
+                    .limit(5);
+                
+                if (error) {
+                    addLog(`❌ Error fetching orders: ${error.message}`, 'error');
+                    return;
+                }
+                
+                const ordersDiv = document.getElementById('ordersInfo');
+                if (orders && orders.length > 0) {
+                    let html = `<p><strong>Found ${orders.length} recent orders:</strong></p><ul>`;
+                    orders.forEach(order => {
+                        html += `<li><strong>${order.order_number}</strong>: ${order.status} (${new Date(order.updated_at).toLocaleString()})</li>`;
+                    });
+                    html += '</ul>';
+                    ordersDiv.innerHTML = html;
+                    
+                    addLog(`📋 Found ${orders.length} orders in database`, 'success');
+                } else {
+                    ordersDiv.innerHTML = '<p><strong>No orders found in database</strong></p>';
+                    addLog('📋 No orders found in database', 'warning');
+                }
+                
+            } catch (error) {
+                addLog(`❌ Error checking orders: ${error.message}`, 'error');
+            }
+        };
+        
+        window.clearLog = function() {
+            const log = document.getElementById('log');
+            log.innerHTML = '<div class="log-entry log-info">[INFO] Log cleared</div>';
+            updateCount = 0;
+        };
+        
+        // Auto-check orders on load
+        setTimeout(() => {
+            window.checkOrders();
+        }, 1000);
+    </script>
+</body>
+</html>

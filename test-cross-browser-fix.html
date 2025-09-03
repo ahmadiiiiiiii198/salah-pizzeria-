@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross-Browser Order Tracking Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .test-card { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .success { border-left: 4px solid #22c55e; background: #f0fdf4; }
+        .error { border-left: 4px solid #ef4444; background: #fef2f2; }
+        .info { border-left: 4px solid #3b82f6; background: #eff6ff; }
+        .warning { border-left: 4px solid #f59e0b; background: #fffbeb; }
+        button { padding: 12px 20px; margin: 8px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+        button:hover { background: #2563eb; }
+        button.secondary { background: #6b7280; }
+        button.secondary:hover { background: #4b5563; }
+        #log { background: #1f2937; color: #f9fafb; padding: 15px; border-radius: 6px; max-height: 400px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.4; }
+        .log-entry { margin: 2px 0; }
+        .log-success { color: #22c55e; }
+        .log-error { color: #ef4444; }
+        .log-info { color: #60a5fa; }
+        .log-warning { color: #fbbf24; }
+        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .status-active { background: #22c55e; color: white; }
+        .status-inactive { background: #6b7280; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Cross-Browser Order Tracking Fix Test</h1>
+        
+        <div class="test-card info">
+            <h3>📋 Test Instructions</h3>
+            <ol>
+                <li><strong>Browser A</strong>: Place an order on this site</li>
+                <li><strong>Browser B</strong>: Open this test page and click "Start Monitoring"</li>
+                <li><strong>Admin Panel</strong>: Update the order status from admin panel</li>
+                <li><strong>Verify</strong>: Check if Browser B receives the real-time update</li>
+            </ol>
+            <p><strong>Expected Result:</strong> Order status should update in Browser B even though it has a different clientId</p>
+        </div>
+
+        <div class="test-card">
+            <h3>🔄 Real-time Monitoring</h3>
+            <div style="margin-bottom: 15px;">
+                <button onclick="startMonitoring()">Start Monitoring</button>
+                <button onclick="stopMonitoring()" class="secondary">Stop Monitoring</button>
+                <button onclick="clearLog()" class="secondary">Clear Log</button>
+                <button onclick="checkCurrentState()">Check Current State</button>
+            </div>
+            <p>Status: <span id="status" class="status-badge status-inactive">Not monitoring</span></p>
+        </div>
+
+        <div class="test-card">
+            <h3>📊 Current State</h3>
+            <div id="currentState">
+                <p>Click "Check Current State" to see authentication and order information</p>
+            </div>
+        </div>
+
+        <div class="test-card">
+            <h3>📝 Real-time Log</h3>
+            <div id="log">
+                <div class="log-entry log-info">[INFO] Cross-browser test ready. Click "Start Monitoring" to begin.</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        let monitoringChannels = [];
+        let isMonitoring = false;
+        
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = `log-${type}`;
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${className}`;
+            entry.textContent = `[${timestamp}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function updateStatus(text, active = false) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = text;
+            statusEl.className = `status-badge ${active ? 'status-active' : 'status-inactive'}`;
+        }
+        
+        window.startMonitoring = async function() {
+            if (isMonitoring) {
+                addLog('Already monitoring!', 'warning');
+                return;
+            }
+            
+            try {
+                const { supabase } = await import('./src/integrations/supabase/client.js');
+                
+                addLog('🚀 Starting cross-browser monitoring...', 'info');
+                updateStatus('Monitoring Active', true);
+                isMonitoring = true;
+                
+                // Monitor ALL order updates
+                const allOrdersChannel = supabase
+                    .channel('test-all-orders-' + Date.now())
+                    .on('postgres_changes', {
+                        event: 'UPDATE',
+                        schema: 'public',
+                        table: 'orders'
+                    }, (payload) => {
+                        addLog('🔔 Order update detected!', 'success');
+                        addLog(`📦 Order: ${payload.new.order_number}`, 'info');
+                        addLog(`📦 Status: ${payload.new.status}`, 'info');
+                        addLog(`📦 User ID: ${payload.new.user_id || 'null'}`, 'info');
+                        addLog(`📦 Has Metadata: ${!!payload.new.metadata}`, payload.new.metadata ? 'success' : 'error');
+                        
+                        if (payload.new.metadata?.clientId) {
+                            addLog(`📦 Client ID: ${payload.new.metadata.clientId.slice(-12)}`, 'success');
+                        }
+                        
+                        addLog('---', 'info');
+                    })
+                    .subscribe();
+                
+                monitoringChannels.push(allOrdersChannel);
+                
+                // Check authentication and monitor user-specific orders
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.user?.id) {
+                    addLog('👤 Authenticated user detected, monitoring user orders...', 'info');
+                    const userChannel = supabase
+                        .channel('test-user-orders-' + Date.now())
+                        .on('postgres_changes', {
+                            event: 'UPDATE',
+                            schema: 'public',
+                            table: 'orders',
+                            filter: `user_id=eq.${session.user.id}`
+                        }, (payload) => {
+                            addLog('✅ USER ORDER UPDATE (should trigger UI update)', 'success');
+                            addLog(`📦 Order: ${payload.new.order_number}`, 'success');
+                            addLog(`📦 Status: ${payload.new.status}`, 'success');
+                        })
+                        .subscribe();
+                    
+                    monitoringChannels.push(userChannel);
+                }
+                
+                // Monitor client-specific orders
+                const clientId = localStorage.getItem('pizzeria_client_id');
+                if (clientId) {
+                    addLog(`🆔 Client ID detected, monitoring client orders...`, 'info');
+                    const clientChannel = supabase
+                        .channel('test-client-orders-' + Date.now())
+                        .on('postgres_changes', {
+                            event: 'UPDATE',
+                            schema: 'public',
+                            table: 'orders'
+                        }, (payload) => {
+                            if (payload.new.metadata?.clientId === clientId) {
+                                addLog('✅ CLIENT ORDER UPDATE (should trigger UI update)', 'success');
+                                addLog(`📦 Order: ${payload.new.order_number}`, 'success');
+                                addLog(`📦 Status: ${payload.new.status}`, 'success');
+                            }
+                        })
+                        .subscribe();
+                    
+                    monitoringChannels.push(clientChannel);
+                }
+                
+                addLog('✅ Monitoring started successfully', 'success');
+                addLog('💡 Now update an order status from admin panel', 'info');
+                
+            } catch (error) {
+                addLog(`❌ Error starting monitoring: ${error.message}`, 'error');
+                updateStatus('Error', false);
+                isMonitoring = false;
+            }
+        };
+        
+        window.stopMonitoring = function() {
+            if (!isMonitoring) {
+                addLog('Not currently monitoring', 'warning');
+                return;
+            }
+            
+            monitoringChannels.forEach(channel => {
+                if (channel) channel.unsubscribe();
+            });
+            monitoringChannels = [];
+            isMonitoring = false;
+            
+            addLog('🛑 Monitoring stopped', 'info');
+            updateStatus('Not monitoring', false);
+        };
+        
+        window.checkCurrentState = async function() {
+            try {
+                const { supabase } = await import('./src/integrations/supabase/client.js');
+                
+                const stateDiv = document.getElementById('currentState');
+                let html = '<h4>Current State:</h4>';
+                
+                // Check authentication
+                const { data: { session } } = await supabase.auth.getSession();
+                html += `<p><strong>Authentication:</strong> ${session ? 'Authenticated' : 'Anonymous'}</p>`;
+                if (session) {
+                    html += `<p><strong>User ID:</strong> ${session.user.id}</p>`;
+                }
+                
+                // Check client ID
+                const clientId = localStorage.getItem('pizzeria_client_id');
+                html += `<p><strong>Client ID:</strong> ${clientId ? clientId.slice(-12) + '...' : 'Not found'}</p>`;
+                
+                // Check orders
+                if (session?.user?.id) {
+                    const { data: userOrders } = await supabase
+                        .from('orders')
+                        .select('id, order_number, status, user_id')
+                        .eq('user_id', session.user.id)
+                        .order('created_at', { ascending: false })
+                        .limit(3);
+                    
+                    html += `<p><strong>User Orders:</strong> ${userOrders?.length || 0}</p>`;
+                    userOrders?.forEach(order => {
+                        html += `<p style="margin-left: 20px;">📦 ${order.order_number}: ${order.status}</p>`;
+                    });
+                }
+                
+                if (clientId) {
+                    const { data: clientOrders } = await supabase
+                        .from('orders')
+                        .select('id, order_number, status, metadata')
+                        .contains('metadata', { clientId })
+                        .order('created_at', { ascending: false })
+                        .limit(3);
+                    
+                    html += `<p><strong>Client Orders:</strong> ${clientOrders?.length || 0}</p>`;
+                    clientOrders?.forEach(order => {
+                        html += `<p style="margin-left: 20px;">📦 ${order.order_number}: ${order.status}</p>`;
+                    });
+                }
+                
+                stateDiv.innerHTML = html;
+                
+            } catch (error) {
+                addLog(`❌ Error checking state: ${error.message}`, 'error');
+            }
+        };
+        
+        window.clearLog = function() {
+            const log = document.getElementById('log');
+            log.innerHTML = '<div class="log-entry log-info">[INFO] Log cleared</div>';
+        };
+        
+        // Auto-check state on load
+        setTimeout(() => {
+            window.checkCurrentState();
+        }, 1000);
+    </script>
+</body>
+</html>

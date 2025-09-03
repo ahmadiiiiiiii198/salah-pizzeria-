@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Orari Display</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Orari Display Issue</h1>
+    <p>This will help us understand why Footer and Contact aren't showing the updated hours.</p>
+    
+    <button onclick="checkCurrentState()">Check Current State</button>
+    <button onclick="updateHours()">Test Update Hours</button>
+    <button onclick="checkRealTimeConnection()">Test Real-time</button>
+    
+    <div id="results"></div>
+    
+    <script type="module">
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
+        
+        const supabaseUrl = 'https://yliofvqfyimlbxjmsuow.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsaW9mdnFmeWltbGJ4am1zdW93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQxNzI5NzQsImV4cCI6MjAzOTc0ODk3NH0.VJJOJqBOgvPQMM_uDLKFlrYK_PQA4W2pkgb7JgKt5Qs';
+        
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        const resultsDiv = document.getElementById('results');
+        
+        function addResult(type, title, content) {
+            const div = document.createElement('div');
+            div.className = `debug-section ${type}`;
+            div.innerHTML = `<h3>${title}</h3>${content}`;
+            resultsDiv.appendChild(div);
+        }
+        
+        function clearResults() {
+            resultsDiv.innerHTML = '';
+        }
+        
+        window.checkCurrentState = async function() {
+            clearResults();
+            addResult('info', 'Checking Current State', 'Fetching all relevant settings...');
+            
+            try {
+                // Check heroContent.openingHours
+                const { data: heroData, error: heroError } = await supabase
+                    .from('settings')
+                    .select('value')
+                    .eq('key', 'heroContent')
+                    .single();
+                
+                if (heroError) {
+                    addResult('error', 'HeroContent Error', heroError.message);
+                    return;
+                }
+                
+                const openingHours = heroData?.value?.openingHours;
+                addResult('success', 'HeroContent.openingHours', `
+                    <strong>Current Value:</strong> "${openingHours || 'NOT FOUND'}"<br>
+                    <strong>This is what Footer and Contact should display</strong>
+                `);
+                
+                // Check contactContent
+                const { data: contactData, error: contactError } = await supabase
+                    .from('settings')
+                    .select('value')
+                    .eq('key', 'contactContent')
+                    .single();
+                
+                if (contactData?.value?.hours) {
+                    addResult('info', 'ContactContent.hours (Legacy)', `
+                        <strong>Value:</strong> "${contactData.value.hours}"<br>
+                        <strong>Note:</strong> This should NOT be used anymore
+                    `);
+                }
+                
+                // Check opening_hours (admin data)
+                const { data: openingData, error: openingError } = await supabase
+                    .from('settings')
+                    .select('value')
+                    .eq('key', 'opening_hours')
+                    .single();
+                
+                if (openingData?.value) {
+                    addResult('info', 'Opening_hours (Admin Detail)', `
+                        <pre>${JSON.stringify(openingData.value, null, 2)}</pre>
+                    `);
+                }
+                
+                // Check businessHours
+                const { data: businessData, error: businessError } = await supabase
+                    .from('settings')
+                    .select('value')
+                    .eq('key', 'businessHours')
+                    .single();
+                
+                if (businessData?.value) {
+                    addResult('info', 'BusinessHours (Order Control)', `
+                        <pre>${JSON.stringify(businessData.value, null, 2)}</pre>
+                    `);
+                }
+                
+            } catch (error) {
+                addResult('error', 'Error', error.message);
+            }
+        };
+        
+        window.updateHours = async function() {
+            clearResults();
+            addResult('info', 'Testing Update', 'Updating heroContent.openingHours...');
+            
+            try {
+                const testValue = `APERTO 7 SU 7 DALLE 12:00 - TEST ${new Date().getTime()}`;
+                
+                // Get current heroContent
+                const { data: heroData } = await supabase
+                    .from('settings')
+                    .select('value')
+                    .eq('key', 'heroContent')
+                    .single();
+                
+                if (heroData?.value) {
+                    const updatedHeroContent = {
+                        ...heroData.value,
+                        openingHours: testValue
+                    };
+                    
+                    const { error } = await supabase
+                        .from('settings')
+                        .update({ value: updatedHeroContent })
+                        .eq('key', 'heroContent');
+                    
+                    if (error) {
+                        addResult('error', 'Update Failed', error.message);
+                    } else {
+                        addResult('success', 'Update Successful', `
+                            <strong>New Value:</strong> "${testValue}"<br>
+                            <strong>Check Footer and Contact now!</strong><br>
+                            <em>If they don't update, there's a frontend issue.</em>
+                        `);
+                    }
+                }
+                
+            } catch (error) {
+                addResult('error', 'Error', error.message);
+            }
+        };
+        
+        window.checkRealTimeConnection = async function() {
+            clearResults();
+            addResult('info', 'Testing Real-time', 'Setting up real-time listener...');
+            
+            const channel = supabase
+                .channel('debug-test')
+                .on('postgres_changes', {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'settings',
+                    filter: 'key=eq.heroContent'
+                }, (payload) => {
+                    addResult('success', 'Real-time Event Received!', `
+                        <strong>Event:</strong> ${payload.eventType}<br>
+                        <strong>New openingHours:</strong> "${payload.new?.value?.openingHours || 'NOT FOUND'}"<br>
+                        <strong>This proves real-time is working!</strong>
+                    `);
+                })
+                .subscribe();
+            
+            addResult('info', 'Listener Active', 'Now update hours in admin panel and watch for real-time events...');
+            
+            // Auto-cleanup after 30 seconds
+            setTimeout(() => {
+                supabase.removeChannel(channel);
+                addResult('info', 'Cleanup', 'Real-time listener removed after 30 seconds');
+            }, 30000);
+        };
+    </script>
+</body>
+</html>

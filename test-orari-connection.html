@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Orari Connection</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🕐 Orari Connection Test</h1>
+    <p>This test verifies that Footer and Contact components properly read from the "Orari di Apertura" setting.</p>
+
+    <div id="results"></div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
+
+        // Use the same Supabase config as the app
+        const supabaseUrl = 'https://yliofvqfyimlbxjmsuow.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsaW9mdnFmeWltbGJ4am1zdW93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQxNzI5NzQsImV4cCI6MjAzOTc0ODk3NH0.VJJOJqBOgvPQMM_uDLKFlrYK_PQA4W2pkgb7JgKt5Qs';
+
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        const resultsDiv = document.getElementById('results');
+
+        function addResult(type, title, content) {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `<strong>${title}</strong><br>${content}`;
+            resultsDiv.appendChild(div);
+        }
+
+        function formatOpeningHoursForDisplay(hours) {
+            const days = Object.values(hours);
+            const firstDay = days[0];
+
+            const allSame = days.every(day =>
+                day.closed === firstDay.closed &&
+                day.open === firstDay.open &&
+                day.close === firstDay.close
+            );
+
+            if (allSame && !firstDay.closed) {
+                return `Lun-Dom: ${firstDay.open} - ${firstDay.close}`;
+            }
+
+            const openDays = days.filter(day => !day.closed);
+            if (openDays.length === 0) {
+                return 'Chiuso';
+            }
+
+            const mostCommon = openDays[0];
+            return `Lun-Dom: ${mostCommon.open} - ${mostCommon.close}`;
+        }
+
+        async function testOrariConnection() {
+            try {
+                addResult('info', 'Test Started', 'Testing CORRECTED orari connection...');
+
+                // Test 1: Check heroContent.openingHours (what Footer/Contact read)
+                const { data: heroData, error: heroError } = await supabase
+                    .from('settings')
+                    .select('key, value, updated_at')
+                    .eq('key', 'heroContent')
+                    .single();
+
+                if (heroError) {
+                    addResult('error', 'Test 1 Failed', `Error fetching heroContent: ${heroError.message}`);
+                    return;
+                }
+
+                if (!heroData?.value?.openingHours) {
+                    addResult('error', 'Test 1 Failed', 'heroContent.openingHours not found');
+                    return;
+                }
+
+                addResult('success', 'Test 1 Passed', `heroContent.openingHours found: "${heroData.value.openingHours}"`);
+
+                // Test 2: Check opening_hours (admin detailed data)
+                const { data: openingHoursData, error: openingError } = await supabase
+                    .from('settings')
+                    .select('key, value, updated_at')
+                    .eq('key', 'opening_hours')
+                    .single();
+
+                if (openingError) {
+                    addResult('error', 'Test 2 Failed', `Error fetching opening_hours: ${openingError.message}`);
+                    return;
+                }
+
+                if (!openingHoursData) {
+                    addResult('error', 'Test 2 Failed', 'opening_hours setting not found');
+                    return;
+                }
+
+                addResult('success', 'Test 2 Passed', `opening_hours detailed data found. Last updated: ${openingHoursData.updated_at}`);
+
+                // Test 3: Check businessHours for comparison
+                const { data: businessHoursData, error: businessError } = await supabase
+                    .from('settings')
+                    .select('key, value')
+                    .eq('key', 'businessHours')
+                    .single();
+
+                if (businessHoursData) {
+                    addResult('success', 'Test 3 Passed', 'businessHours found for order control');
+                } else {
+                    addResult('error', 'Test 3 Failed', 'businessHours not found');
+                }
+
+                // Test 4: Show the correct architecture
+                addResult('info', 'CORRECT ARCHITECTURE', `
+                    <strong>✅ Admin "Orari di Apertura":</strong><br>
+                    - Saves detailed hours to: <code>opening_hours</code><br>
+                    - Saves display string to: <code>heroContent.openingHours</code><br><br>
+
+                    <strong>✅ Footer & Contact:</strong><br>
+                    - Read from: <code>heroContent.openingHours</code><br>
+                    - Current value: "${heroData.value.openingHours}"<br><br>
+
+                    <strong>✅ Business Logic:</strong><br>
+                    - Uses: <code>businessHours</code> for order validation<br><br>
+
+                    <strong>🔄 Real-time Updates:</strong><br>
+                    - Footer/Contact listen to <code>heroContent</code> changes
+                `);
+
+                // Test 5: Show raw data
+                addResult('info', 'Raw Data Comparison', `
+                    <strong>heroContent.openingHours (Display):</strong><br>
+                    <code>"${heroData.value.openingHours}"</code><br><br>
+
+                    <strong>opening_hours (Admin Detail):</strong><br>
+                    <pre>${JSON.stringify(openingHoursData.value, null, 2)}</pre><br>
+
+                    <strong>businessHours (Order Control):</strong><br>
+                    <pre>${JSON.stringify(businessHoursData.value, null, 2)}</pre>
+                `);
+
+                addResult('success', 'All Tests Passed', 'Orari connection is now CORRECTLY configured! 🎉');
+
+            } catch (error) {
+                addResult('error', 'Test Failed', `Unexpected error: ${error.message}`);
+            }
+        }
+
+        // Run the test
+        testOrariConnection();
+    </script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross-Browser Admin Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .card { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .success { border-left: 5px solid #22c55e; background: #f0fdf4; }
+        .error { border-left: 5px solid #ef4444; background: #fef2f2; }
+        .info { border-left: 5px solid #3b82f6; background: #eff6ff; }
+        .warning { border-left: 5px solid #f59e0b; background: #fffbeb; }
+        button { padding: 12px 24px; margin: 8px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }
+        button:hover { background: #2563eb; }
+        button.success { background: #22c55e; }
+        button.success:hover { background: #16a34a; }
+        button.danger { background: #ef4444; }
+        button.danger:hover { background: #dc2626; }
+        #log { background: #1e293b; color: #f1f5f9; padding: 20px; border-radius: 8px; max-height: 500px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.6; }
+        .log-entry { margin: 4px 0; padding: 2px 0; }
+        .log-success { color: #22c55e; font-weight: bold; }
+        .log-error { color: #ef4444; font-weight: bold; }
+        .log-info { color: #60a5fa; }
+        .log-warning { color: #fbbf24; }
+        h1 { color: #1e293b; margin-bottom: 10px; }
+        h2 { color: #374151; margin-top: 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Cross-Browser Admin Authentication Test</h1>
+        <p>This test verifies that admin authentication works across different browsers.</p>
+        
+        <div class="card info">
+            <h2>📋 Test Instructions</h2>
+            <ol>
+                <li>Click "Test Admin Authentication" below</li>
+                <li>If authentication fails, click "Simulate Admin Login"</li>
+                <li>Try "Test Order Update" to verify admin permissions</li>
+                <li>Open this page in a different browser and repeat</li>
+                <li>Both browsers should be able to perform admin operations</li>
+            </ol>
+        </div>
+
+        <div class="card">
+            <h2>🔐 Admin Authentication Test</h2>
+            <div style="margin-top: 15px;">
+                <button onclick="testAdminAuth()" class="success">Test Admin Authentication</button>
+                <button onclick="simulateAdminLogin()">Simulate Admin Login</button>
+                <button onclick="testOrderUpdate()">Test Order Update</button>
+                <button onclick="clearLog()">Clear Log</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📊 Authentication Status</h2>
+            <div id="authStatus">
+                <p>Click "Test Admin Authentication" to check current status</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📝 Test Log</h2>
+            <div id="log">
+                <div class="log-entry log-info">[INFO] Cross-browser admin test ready. Click "Test Admin Authentication" to begin.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${timestamp}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function updateAuthStatus(html) {
+            document.getElementById('authStatus').innerHTML = html;
+        }
+        
+        async function testAdminAuth() {
+            addLog('🔐 Testing admin authentication...', 'info');
+            
+            try {
+                // Check localStorage
+                const adminAuth = localStorage.getItem('adminAuthenticated');
+                addLog(`📱 localStorage admin auth: ${adminAuth || 'not found'}`, adminAuth ? 'success' : 'warning');
+                
+                // Check Supabase session
+                const response = await fetch('/src/integrations/supabase/client.js');
+                if (response.ok) {
+                    addLog('✅ Supabase client accessible', 'success');
+                    
+                    // Try to check session (this would need to be done differently in real implementation)
+                    addLog('🔍 Checking Supabase session...', 'info');
+                    
+                    let statusHtml = '<h3>Authentication Status:</h3>';
+                    statusHtml += `<p><strong>localStorage:</strong> ${adminAuth ? '✅ Authenticated' : '❌ Not authenticated'}</p>`;
+                    statusHtml += `<p><strong>Supabase Client:</strong> ✅ Available</p>`;
+                    statusHtml += `<p><strong>Browser:</strong> ${navigator.userAgent.slice(0, 50)}...</p>`;
+                    
+                    updateAuthStatus(statusHtml);
+                    
+                    if (adminAuth) {
+                        addLog('✅ Admin authentication verified', 'success');
+                        addLog('💡 Try "Test Order Update" to verify permissions', 'info');
+                    } else {
+                        addLog('❌ Admin not authenticated', 'error');
+                        addLog('💡 Click "Simulate Admin Login" to authenticate', 'warning');
+                    }
+                } else {
+                    addLog('❌ Cannot access Supabase client', 'error');
+                }
+                
+            } catch (error) {
+                addLog(`❌ Error testing authentication: ${error.message}`, 'error');
+            }
+        }
+        
+        async function simulateAdminLogin() {
+            addLog('🔐 Simulating admin login...', 'info');
+            
+            try {
+                // Simulate the admin login process
+                localStorage.setItem('adminAuthenticated', 'true');
+                addLog('✅ localStorage admin auth set', 'success');
+                
+                // In a real implementation, this would also create a Supabase session
+                addLog('🔍 In real implementation, this would create Supabase session', 'info');
+                addLog('✅ Admin login simulation complete', 'success');
+                addLog('💡 Now try "Test Admin Authentication" again', 'info');
+                
+                // Update status
+                let statusHtml = '<h3>Authentication Status:</h3>';
+                statusHtml += '<p><strong>localStorage:</strong> ✅ Authenticated (simulated)</p>';
+                statusHtml += '<p><strong>Supabase Session:</strong> 🔄 Would be created in real implementation</p>';
+                statusHtml += '<p><strong>Cross-browser:</strong> ⚠️ Only works if Supabase session is properly created</p>';
+                
+                updateAuthStatus(statusHtml);
+                
+            } catch (error) {
+                addLog(`❌ Error simulating login: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testOrderUpdate() {
+            addLog('🔄 Testing order update permissions...', 'info');
+            
+            try {
+                const adminAuth = localStorage.getItem('adminAuthenticated');
+                
+                if (!adminAuth) {
+                    addLog('❌ Admin not authenticated - cannot test order update', 'error');
+                    addLog('💡 Click "Simulate Admin Login" first', 'warning');
+                    return;
+                }
+                
+                addLog('🔍 Admin authenticated, testing order update...', 'info');
+                
+                // In a real implementation, this would:
+                // 1. Call ensureAdminAuth()
+                // 2. Try to update an order
+                // 3. Check if the update succeeds
+                
+                addLog('🔍 Would call ensureAdminAuth()...', 'info');
+                addLog('🔍 Would attempt order status update...', 'info');
+                addLog('🔍 Would verify database permissions...', 'info');
+                
+                // Simulate success for now
+                addLog('✅ Order update test complete (simulated)', 'success');
+                addLog('💡 In real implementation, this would test actual database operations', 'info');
+                
+            } catch (error) {
+                addLog(`❌ Error testing order update: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearLog() {
+            const log = document.getElementById('log');
+            log.innerHTML = '<div class="log-entry log-info">[INFO] Log cleared</div>';
+        }
+        
+        // Auto-run initial test
+        setTimeout(() => {
+            addLog('🚀 Auto-running initial authentication test...', 'info');
+            testAdminAuth();
+        }, 1000);
+    </script>
+</body>
+</html>

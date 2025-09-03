@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Order Tracking Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #log { background: #f8f9fa; padding: 10px; border-radius: 3px; max-height: 400px; overflow-y: auto; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Real-time Order Tracking Fix Test</h1>
+    
+    <div class="test-section info">
+        <h3>📋 Test Instructions</h3>
+        <ol>
+            <li>Click "Start Real-time Monitoring" below</li>
+            <li>Open admin panel in another browser/tab</li>
+            <li>Update an order status from the admin panel</li>
+            <li>Check if metadata is preserved in the real-time payload</li>
+            <li>Verify that client-side filtering works correctly</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h3>🔄 Real-time Monitoring</h3>
+        <button onclick="startRealtimeMonitoring()">Start Real-time Monitoring</button>
+        <button onclick="stopRealtimeMonitoring()">Stop Monitoring</button>
+        <button onclick="clearLog()">Clear Log</button>
+        <p id="status">Status: Not monitoring</p>
+    </div>
+
+    <div class="test-section">
+        <h3>📊 Test Results</h3>
+        <div id="log"></div>
+    </div>
+
+    <script type="module">
+        let realtimeChannel = null;
+        
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            log.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        window.startRealtimeMonitoring = async function() {
+            try {
+                // Import supabase client
+                const { supabase } = await import('./src/integrations/supabase/client.js');
+                
+                addLog('🚀 Starting real-time monitoring...', 'info');
+                document.getElementById('status').textContent = 'Status: Monitoring active';
+                
+                // Set up real-time listener
+                realtimeChannel = supabase
+                    .channel('realtime-fix-test-' + Date.now())
+                    .on('postgres_changes', {
+                        event: 'UPDATE',
+                        schema: 'public',
+                        table: 'orders'
+                    }, (payload) => {
+                        addLog('🔔 Real-time update received!', 'success');
+                        addLog(`📦 Order ID: ${payload.new.id}`, 'info');
+                        addLog(`📦 Order Number: ${payload.new.order_number}`, 'info');
+                        addLog(`📦 Status: ${payload.new.status}`, 'info');
+                        addLog(`📦 Has Metadata: ${!!payload.new.metadata}`, payload.new.metadata ? 'success' : 'error');
+                        
+                        if (payload.new.metadata) {
+                            addLog(`📦 Client ID: ${payload.new.metadata.clientId}`, 'success');
+                            addLog('✅ METADATA PRESERVED - Fix working!', 'success');
+                        } else {
+                            addLog('❌ METADATA MISSING - Fix not working!', 'error');
+                        }
+                        
+                        addLog(`📦 Full payload: ${JSON.stringify(payload.new, null, 2)}`, 'info');
+                        addLog('---', 'info');
+                    })
+                    .subscribe((status) => {
+                        addLog(`📡 Subscription status: ${status}`, 'info');
+                    });
+                
+                addLog('✅ Real-time monitoring started successfully', 'success');
+                addLog('💡 Now update an order status from admin panel to test', 'info');
+                
+            } catch (error) {
+                addLog(`❌ Error starting monitoring: ${error.message}`, 'error');
+            }
+        };
+        
+        window.stopRealtimeMonitoring = function() {
+            if (realtimeChannel) {
+                realtimeChannel.unsubscribe();
+                realtimeChannel = null;
+                addLog('🛑 Real-time monitoring stopped', 'info');
+                document.getElementById('status').textContent = 'Status: Not monitoring';
+            }
+        };
+        
+        window.clearLog = function() {
+            document.getElementById('log').innerHTML = '';
+        };
+        
+        // Initial log
+        addLog('🔧 Real-time Order Tracking Fix Test Ready', 'info');
+        addLog('📋 Click "Start Real-time Monitoring" to begin', 'info');
+    </script>
+</body>
+</html>
